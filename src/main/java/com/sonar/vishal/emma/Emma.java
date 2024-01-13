@@ -11,5 +11,4 @@ public class Emma {
 	public static void main(String[] args) {
 		SpringApplication.run(Emma.class, args);
 	}
-
 }
