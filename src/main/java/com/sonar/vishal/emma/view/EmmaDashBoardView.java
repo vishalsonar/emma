@@ -1,48 +1,31 @@
 package com.sonar.vishal.emma.view;
 
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.html.Paragraph;
+import com.sonar.vishal.emma.service.EmmaAnalyticsService;
+import com.sonar.vishal.emma.util.EmmaComponentUtil;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.router.Route;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Route("")
 public class EmmaDashBoardView extends VerticalLayout {
 
-    private static final Logger LOG = LoggerFactory.getLogger(EmmaDashBoardView.class);
+    private EmmaAnalyticsService analyticsService;
 
     public EmmaDashBoardView() {
-        // Use TextField for standard text input
-        TextField textField = new TextField("Your name");
+        setWidthFull();
+        setHeightFull();
+        analyticsService = new EmmaAnalyticsService();
+        add(EmmaComponentUtil.getLogo());
+        add(new Html("<hr>"));
 
-        // Button click listeners can be defined as lambda expressions
-        Button button = new Button("Say hello", e -> {
-            add(new Paragraph(greet(textField.getValue())));
-        });
-
-        // Theme variants give you predefined extra styles for components.
-        // Example: Primary button is more prominent look.
-        button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        // You can specify keyboard shortcuts for buttons.
-        // Example: Pressing enter in this view clicks the Button.
-        button.addClickShortcut(Key.ENTER);
-
-        // Use custom CSS classes to apply styling. This is defined in shared-styles.css.
-        addClassName("centered-content");
-
-        add(textField, button);
-    }
-
-    public String greet(String name) {
-        if (name == null || name.isEmpty()) {
-            return "Hello anonymous user";
-        } else {
-            return "Hello " + name;
-        }
+        TabSheet tabSheet = new TabSheet();
+        tabSheet.add("Gainer Today", analyticsService.getTodayDataGrid());
+        tabSheet.add("Gainer Week", analyticsService.getWeekDataGrid());
+        tabSheet.add("Gainer Month", analyticsService.getMonthDataGrid());
+        tabSheet.add("Gainer Frequency", analyticsService.getFrequencyDataGrid());
+        tabSheet.setWidthFull();
+        tabSheet.setHeightFull();
+        add(tabSheet);
     }
 }
