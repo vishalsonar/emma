@@ -1,9 +1,8 @@
 package com.sonar.vishal.emma.entity;
 
-public class EmmaFrequencyData {
+public class FrequencyData {
 
     private String companyName;
-
     private String occurrence;
 
     public String getCompanyName() {
