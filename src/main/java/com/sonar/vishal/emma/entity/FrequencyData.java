@@ -4,6 +4,7 @@ public class FrequencyData {
 
     private String companyName;
     private String occurrence;
+    private String averagePercentage;
 
     public String getCompanyName() {
         return companyName;
@@ -19,5 +20,13 @@ public class FrequencyData {
 
     public void setOccurrence(String occurrence) {
         this.occurrence = occurrence;
+    }
+
+    public String getAveragePercentage() {
+        return averagePercentage;
+    }
+
+    public void setAveragePercentage(String averagePercentage) {
+        this.averagePercentage = averagePercentage;
     }
 }

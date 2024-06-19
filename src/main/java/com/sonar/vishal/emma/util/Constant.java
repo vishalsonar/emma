@@ -5,9 +5,17 @@ import org.slf4j.LoggerFactory;
 
 public class Constant {
 
+    private Constant() {
+        // Prevent Instantiation
+    }
+
     public static final Logger LOG = LoggerFactory.getLogger(Constant.class);
 
     public static final String TIME_15_30 = "15:30";
+    public static final String ASIA_KOLKATA = "Asia/Kolkata";
+
+    public static final String PIPE = "|";
+    public static final String PIPE_REGEX = "\\|";
 
     public static final String EMPTY = "";
     public static final String HTML_HR = "<hr>";

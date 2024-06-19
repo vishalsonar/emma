@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,12 +77,12 @@ public class FireBaseService implements Serializable {
     public void addOrUpdateDocument(List<Data> dataList, String documentName) {
         try {
             dataList.stream().forEach(data -> firestore.collection(documentName).document(data.getCompanyName()).set(data));
-            Map<String, Long> dataListMap = dataList.stream().collect(Collectors.groupingBy(Data::getCompanyName, Collectors.counting()));
+            Map<String, String> dataListMap = dataList.stream().collect(Collectors.toMap(Data::getCompanyName, Data::getPercentageChange));
             Map<String, Object> remoteDataListMap = firestore.collection(Constant.ANALYTICS).document(documentName).get().get().getData();
             if (remoteDataListMap != null) {
                 remoteDataListMap.entrySet().forEach(entry -> {
                     if (!dataListMap.containsKey(entry.getKey())) {
-                        dataListMap.put(entry.getKey(), 1L);
+                        dataListMap.put(entry.getKey(), entry.getValue().toString());
                     }
                 });
             }
@@ -113,18 +114,24 @@ public class FireBaseService implements Serializable {
 
     public void mergeFrequency(String documentName) {
         try {
+            AtomicReference<Long> count = new AtomicReference<>();
+            AtomicReference<String> averageFrequency = new AtomicReference<>();
             Map<String, Object> frequencyData = getFrequencyData();
             Map<String, Object> remoteDataListMap = firestore.collection(Constant.ANALYTICS).document(documentName).get().get().getData();
-            Map<String, Long> newFrequencydata = new HashMap<>();
+            Map<String, Object> newFrequencydata = new HashMap<>();
             if (remoteDataListMap == null) {
                 return;
             }
             remoteDataListMap.entrySet().forEach(entry -> {
                 if (frequencyData.containsKey(entry.getKey())) {
-                    newFrequencydata.put(entry.getKey(), Long.parseLong(frequencyData.get(entry.getKey()).toString()) + 1);
+                    String[] valueString = frequencyData.get(entry.getKey()).toString().split(Constant.PIPE_REGEX);
+                    count.set((Long.parseLong(valueString[0]) + 1));
+                    averageFrequency.set(String.valueOf((Double.parseDouble(valueString[1]) + Double.parseDouble(entry.getValue().toString())) / 2.0d));
                 } else {
-                    newFrequencydata.put(entry.getKey(), 1L);
+                    count.set(1L);
+                    averageFrequency.set(entry.getValue().toString());
                 }
+                newFrequencydata.put(entry.getKey(), count.get() + Constant.PIPE + averageFrequency.get());
             });
             firestore.collection(Constant.ANALYTICS).document(Constant.FREQUENCY).set(newFrequencydata);
             firestore.collection(Constant.ANALYTICS).document(documentName).delete();
