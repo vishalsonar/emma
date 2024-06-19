@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Component
@@ -19,7 +20,7 @@ public class FrequencyModulationTask {
 
     @Scheduled(fixedRateString = "${application.frequency.scheduler.fixedRate.millisecond}")
     public void execute() {
-        if (TaskUtil.inBusinessHour() && LocalTime.now().isAfter(LocalTime.parse(Constant.TIME_15_30))) {
+        if (TaskUtil.inBusinessHour() && LocalTime.now(ZoneId.of(Constant.ASIA_KOLKATA)).isAfter(LocalTime.parse(Constant.TIME_15_30))) {
             String documentName = new SimpleDateFormat(Constant.DOCUMENT_DATE_FORMAT_PATTERN).format(new Date());
             fireBaseService.mergeFrequency(documentName);
         }

@@ -10,6 +10,10 @@ import com.vaadin.flow.dom.Style;
 
 public class ComponentUtil {
 
+    private ComponentUtil() {
+        // Prevent Instantiation
+    }
+
     private static final String EMMA = "EMMA";
     private static final String FIFTY_PERCENTAGE = "50%";
     private static final String OCCURRENCE = "Occurrence";
@@ -39,8 +43,9 @@ public class ComponentUtil {
 
     public static Grid<FrequencyData> getFrequencyGrid() {
         Grid<FrequencyData> grid = new Grid<>(FrequencyData.class, false);
-        grid.addColumn(FrequencyData::getCompanyName).setHeader(COMPANY_NAME);
-        grid.addColumn(FrequencyData::getOccurrence).setHeader(OCCURRENCE);
+        grid.addColumn(FrequencyData::getCompanyName).setHeader(COMPANY_NAME).setWidth(FIFTY_PERCENTAGE);
+        grid.addColumn(FrequencyData::getOccurrence).setHeader(OCCURRENCE).setWidth(TWENTY_FIVE_PERCENTAGE);
+        grid.addColumn(FrequencyData::getAveragePercentage).setHeader(PERCENTAGE_CHANGE).setWidth(TWENTY_FIVE_PERCENTAGE);
         grid.setWidthFull();
         grid.setHeightFull();
         return grid;

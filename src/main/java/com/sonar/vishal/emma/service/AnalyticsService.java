@@ -35,15 +35,15 @@ public class AnalyticsService implements Serializable {
     }
 
     public Grid<Data> getTodayDataGrid() {
-        List<Data> DataList = new ArrayList<>();
+        List<Data> dataList = new ArrayList<>();
         Grid<Data> grid = ComponentUtil.getGrid();
-        Map<String, Data> DataMap = fireBaseService.getCollectionMapData(dateFormat.format(new Date()));
-        if (DataMap != null && !DataMap.isEmpty()) {
-            DataList = DataMap.entrySet().stream().map(Map.Entry::getValue).toList();
+        Map<String, Data> dataMap = fireBaseService.getCollectionMapData(dateFormat.format(new Date()));
+        if (dataMap != null && !dataMap.isEmpty()) {
+            dataList = dataMap.entrySet().stream().map(Map.Entry::getValue).toList();
         } else {
             ComponentUtil.getNotification("Failed to Load Gainer Today Data.", true).open();
         }
-        grid.setItems(sortDataByPercentageChange(new ArrayList<>(DataList)));
+        grid.setItems(sortDataByPercentageChange(new ArrayList<>(dataList)));
         return grid;
     }
 
@@ -56,31 +56,33 @@ public class AnalyticsService implements Serializable {
     }
 
     private FrequencyData createFrequencyData(String companyName, String occurrence) {
+        String[] valueString = occurrence.split(Constant.PIPE_REGEX);
         FrequencyData frequencyData = new FrequencyData();
         frequencyData.setCompanyName(companyName);
-        frequencyData.setOccurrence(occurrence);
+        frequencyData.setOccurrence(valueString[0]);
+        frequencyData.setAveragePercentage(valueString[1]);
         return frequencyData;
     }
 
     private Grid<Data> getGridData(Calendar startOfWeekCalender, Calendar endOfWeekCalender, String errorMessage) {
-        List<Data> DataList = new ArrayList<>();
-        Map<String, Data> DataMap = new HashMap<>();
+        List<Data> dataList = new ArrayList<>();
+        Map<String, Data> dataMap = new HashMap<>();
         Map<String, Data> tempDataMap = null;
         Grid<Data> grid = ComponentUtil.getGrid();
         while (startOfWeekCalender.before(endOfWeekCalender)) {
             tempDataMap = fireBaseService.getCollectionMapData(dateFormat.format(startOfWeekCalender.getTime()));
             if (tempDataMap != null && !tempDataMap.isEmpty()) {
-                tempDataMap.entrySet().forEach(entry -> DataMap.put(entry.getKey(), entry.getValue()));
+                tempDataMap.entrySet().forEach(entry -> dataMap.put(entry.getKey(), entry.getValue()));
             }
             startOfWeekCalender.add(Calendar.DATE, 1);
         }
-        if (!DataMap.isEmpty()) {
-            DataList = DataMap.entrySet().stream().map(Map.Entry::getValue).toList();
+        if (!dataMap.isEmpty()) {
+            dataList = dataMap.entrySet().stream().map(Map.Entry::getValue).toList();
         }
-        if (DataList.isEmpty()) {
+        if (dataList.isEmpty()) {
             ComponentUtil.getNotification(errorMessage, true).open();
         }
-        grid.setItems(sortDataByPercentageChange(new ArrayList<>(DataList)));
+        grid.setItems(sortDataByPercentageChange(new ArrayList<>(dataList)));
         return grid;
     }
 
@@ -104,21 +106,21 @@ public class AnalyticsService implements Serializable {
         return calendar;
     }
 
-    private List<Data> sortDataByPercentageChange(List<Data> DataList) {
-        AtomicReference<Float> Data1PercentageChange = new AtomicReference<>(0F);
-        AtomicReference<Float> Data2PercentageChange = new AtomicReference<>(0F);
-        Collections.sort(DataList, (Data1, Data2) -> {
-            Data1PercentageChange.set(Float.valueOf(Data1.getPercentageChange()));
-            Data2PercentageChange.set(Float.valueOf(Data2.getPercentageChange()));
-            if (Data1PercentageChange.get() > Data2PercentageChange.get()) {
+    private List<Data> sortDataByPercentageChange(List<Data> dataList) {
+        AtomicReference<Float> data1PercentageChange = new AtomicReference<>(0F);
+        AtomicReference<Float> data2PercentageChange = new AtomicReference<>(0F);
+        Collections.sort(dataList, (data1, data2) -> {
+            data1PercentageChange.set(Float.valueOf(data1.getPercentageChange()));
+            data2PercentageChange.set(Float.valueOf(data2.getPercentageChange()));
+            if (data1PercentageChange.get() > data2PercentageChange.get()) {
                 return -1;
             }
-            if (Data1PercentageChange.get() < Data2PercentageChange.get()) {
+            if (data1PercentageChange.get() < data2PercentageChange.get()) {
                 return 1;
             }
             return 0;
         });
-        return DataList;
+        return dataList;
     }
 
     private List<FrequencyData> sortFrequencyDataByOccurrence(List<FrequencyData> frequencyDataList) {
