@@ -40,4 +40,5 @@ public class Constant {
     public static final String ANALYTICS = "ANALYTICS";
     public static final String FREQUENCY = "FREQUENCY";
     public static final String SERVICE_ACCOUNT_FILE_NAME = "emma-service-account.json";
+    public static final String SYSTEM_SERVICE_ACCOUNT = "SYSTEM_SERVICE_ACCOUNT";
 }

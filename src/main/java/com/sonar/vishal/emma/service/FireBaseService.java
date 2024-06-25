@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -53,6 +54,9 @@ public class FireBaseService implements Serializable {
         try {
             if (firestore == null) {
                 InputStream serviceAccount = FireBaseService.class.getClassLoader().getResourceAsStream(Constant.SERVICE_ACCOUNT_FILE_NAME);
+                if (serviceAccount == null) {
+                    serviceAccount = new ByteArrayInputStream(System.getenv(Constant.SYSTEM_SERVICE_ACCOUNT).getBytes());
+                }
                 GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccount);
                 FirebaseOptions options = FirebaseOptions.builder().setCredentials(credentials).build();
                 FirebaseApp.initializeApp(options);
