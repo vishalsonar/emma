@@ -7,6 +7,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
+import com.sonar.vishal.emma.bus.LogErrorEvent;
 import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.util.Constant;
 import jakarta.annotation.PostConstruct;
@@ -57,8 +58,8 @@ public class FireBaseService implements Serializable {
                 FirebaseApp.initializeApp(options);
                 firestore = FirestoreClient.getFirestore();
             }
-        } catch (Exception e) {
-            Constant.LOG.error("FireBaseService :: static :: Error while initializing account.", e);
+        } catch (Exception exception) {
+            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: static :: Error while initializing account.").setException(exception));
         }
     }
 
@@ -88,7 +89,7 @@ public class FireBaseService implements Serializable {
             }
             firestore.collection(Constant.ANALYTICS).document(documentName).set(dataListMap);
         } catch (Exception exception) {
-            Constant.LOG.error("FireBaseService :: addOrUpdateDocument :: Unable to add or udpate document.", exception);
+            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: addOrUpdateDocument :: Unable to add or udpate document.").setException(exception));
         }
     }
 
@@ -97,7 +98,7 @@ public class FireBaseService implements Serializable {
         try {
             dataMap = dataCache.get(collectionName);
         } catch (Exception exception) {
-            Constant.LOG.error("FireBaseService :: getCollectionMapData :: Cache read exception.", exception);
+            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: getCollectionMapData :: Cache read exception.").setException(exception));
         }
         return dataMap;
     }
@@ -107,7 +108,7 @@ public class FireBaseService implements Serializable {
         try {
             frequencyData = frequencyCache.get(Constant.EMPTY);
         } catch (Exception exception) {
-            Constant.LOG.error("FireBaseService :: getFrequencyData :: Failed to update Frequency.", exception);
+            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: getFrequencyData :: Failed to update Frequency.").setException(exception));
         }
         return frequencyData;
     }
@@ -136,7 +137,7 @@ public class FireBaseService implements Serializable {
             firestore.collection(Constant.ANALYTICS).document(Constant.FREQUENCY).set(newFrequencydata);
             firestore.collection(Constant.ANALYTICS).document(documentName).delete();
         } catch (Exception exception) {
-            Constant.LOG.error("FireBaseService :: mergeFrequency :: Failed to merge Frequency.", exception);
+            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: mergeFrequency :: Failed to merge Frequency.").setException(exception));
         }
     }
 }

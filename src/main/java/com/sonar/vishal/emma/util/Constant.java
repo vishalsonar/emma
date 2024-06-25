@@ -1,15 +1,19 @@
 package com.sonar.vishal.emma.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.common.eventbus.EventBus;
+import com.sonar.vishal.emma.bus.LogEventListener;
 
 public class Constant {
+
+    public static final EventBus eventBus = new EventBus();
+
+    static {
+        eventBus.register(new LogEventListener());
+    }
 
     private Constant() {
         // Prevent Instantiation
     }
-
-    public static final Logger LOG = LoggerFactory.getLogger(Constant.class);
 
     public static final String TIME_15_30 = "15:30";
     public static final String ASIA_KOLKATA = "Asia/Kolkata";
