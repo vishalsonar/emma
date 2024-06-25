@@ -2,6 +2,7 @@ package com.sonar.vishal.emma.service;
 
 import com.google.cloud.firestore.Firestore;
 import com.google.common.cache.CacheLoader;
+import com.sonar.vishal.emma.bus.LogErrorEvent;
 import com.sonar.vishal.emma.util.Constant;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,7 @@ public class FrequencyCacheService extends CacheLoader<String, Map<String, Objec
                 frequencyData = new HashMap<>();
             }
         } catch (Exception exception) {
-            Constant.LOG.error("FrequencyCacheService :: load :: Error while loading cache data.", exception);
+            Constant.eventBus.post(new LogErrorEvent().setMessage("FrequencyCacheService :: load :: Error while loading cache data.").setException(exception));
         }
         return frequencyData;
     }

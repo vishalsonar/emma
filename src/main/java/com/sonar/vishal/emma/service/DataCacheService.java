@@ -2,6 +2,7 @@ package com.sonar.vishal.emma.service;
 
 import com.google.cloud.firestore.Firestore;
 import com.google.common.cache.CacheLoader;
+import com.sonar.vishal.emma.bus.LogErrorEvent;
 import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.util.Constant;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class DataCacheService extends CacheLoader<String, Map<String, Data>> {
         try {
             firestore.collection(collectionName).get().get().getDocuments().forEach(document -> dataMap.put(document.getId(), document.toObject(Data.class)));
         } catch (Exception exception) {
-            Constant.LOG.error("DataCacheService :: load :: Error while loading cache data.", exception);
+            Constant.eventBus.post(new LogErrorEvent().setMessage("DataCacheService :: load :: Error while loading cache data.").setException(exception));
         }
         return dataMap;
     }

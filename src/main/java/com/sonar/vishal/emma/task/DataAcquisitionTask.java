@@ -1,5 +1,6 @@
 package com.sonar.vishal.emma.task;
 
+import com.sonar.vishal.emma.bus.LogErrorEvent;
 import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.service.FireBaseService;
 import com.sonar.vishal.emma.util.Constant;
@@ -59,10 +60,10 @@ public class DataAcquisitionTask {
             fireBaseService.addOrUpdateDocument(dataList, documentName);
             chromeDriver.close();
         } catch (InterruptedException interruptedException) {
-            Constant.LOG.error("DataAcquisitionTask :: execute :: Thread Interrupted Exception.", interruptedException);
+            Constant.eventBus.post(new LogErrorEvent().setMessage("DataAcquisitionTask :: execute :: Thread Interrupted Exception.").setException(interruptedException));
             Thread.currentThread().interrupt();
         } catch (Exception exception) {
-            Constant.LOG.error("DataAcquisitionTask :: execute :: Error while executing task.", exception);
+            Constant.eventBus.post(new LogErrorEvent().setMessage("DataAcquisitionTask :: execute :: Error while executing task.").setException(exception));
         }
     }
 
