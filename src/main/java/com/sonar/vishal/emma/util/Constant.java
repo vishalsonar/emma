@@ -23,6 +23,7 @@ public class Constant {
 
     public static final String EMPTY = "";
     public static final String HTML_HR = "<hr>";
+    public static final String TASK_STATUS = "Task Status";
     public static final String GAINER_TODAY = "Gainer Today";
     public static final String GAINER_WEEK = "Gainer Week";
     public static final String GAINER_MONTH = "Gainer Month";
@@ -39,6 +40,10 @@ public class Constant {
 
     public static final String ANALYTICS = "ANALYTICS";
     public static final String FREQUENCY = "FREQUENCY";
+    public static final String TASK = "TASK";
     public static final String SERVICE_ACCOUNT_FILE_NAME = "emma-service-account.json";
     public static final String SYSTEM_SERVICE_ACCOUNT = "SYSTEM_SERVICE_ACCOUNT";
+
+    public static final String FREQUENCY_MODULATION_TASK_NAME = "Frequency Modulation Task";
+    public static final String DATA_AQUISITION_TASK_NAME = "Data Acquisition Task";
 }

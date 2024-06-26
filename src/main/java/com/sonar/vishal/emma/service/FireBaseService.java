@@ -18,6 +18,10 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,5 +147,34 @@ public class FireBaseService implements Serializable {
         } catch (Exception exception) {
             Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: mergeFrequency :: Failed to merge Frequency.").setException(exception));
         }
+    }
+
+    public void updateTaskStatus(String taskName) {
+        try {
+            String dateTimeNow = LocalDate.now(ZoneId.of(Constant.ASIA_KOLKATA)) + Constant.SPACE_REGEX + Constant.HYPHEN + Constant.SPACE_REGEX + LocalTime.now(ZoneId.of(Constant.ASIA_KOLKATA));
+            Map<String, Object> remoteTaskListMap = firestore.collection(Constant.ANALYTICS).document(Constant.TASK).get().get().getData();
+            if (remoteTaskListMap == null) {
+                firestore.collection(Constant.ANALYTICS).document(Constant.TASK).set(Collections.singletonMap(taskName, dateTimeNow));
+            } else {
+                remoteTaskListMap.put(taskName, dateTimeNow);
+                firestore.collection(Constant.ANALYTICS).document(Constant.TASK).set(remoteTaskListMap);
+            }
+        } catch (Exception exception) {
+            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: updateTaskStatus :: Failed to update Task Status.").setException(exception));
+        }
+    }
+
+    public Map<String, Object> getTaskStatus() {
+        Map<String, Object> remoteTaskListMap = null;
+        try {
+            remoteTaskListMap = firestore.collection(Constant.ANALYTICS).document(Constant.TASK).get().get().getData();
+        } catch (Exception exception) {
+            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: getTaskStatus :: Failed get Task Status.").setException(exception));
+        } finally {
+            if (remoteTaskListMap == null) {
+                remoteTaskListMap = Collections.emptyMap();
+            }
+        }
+        return remoteTaskListMap;
     }
 }
