@@ -25,6 +25,7 @@ public class DashBoardView extends VerticalLayout {
         tabSheet.add(Constant.GAINER_WEEK, analyticsService.getWeekDataGrid());
         tabSheet.add(Constant.GAINER_MONTH, analyticsService.getMonthDataGrid());
         tabSheet.add(Constant.GAINER_FREQUENCY, analyticsService.getFrequencyDataGrid());
+        tabSheet.add(Constant.TASK_STATUS, analyticsService.getTaskStatusDataGrid());
         tabSheet.setWidthFull();
         tabSheet.setHeightFull();
         add(tabSheet);

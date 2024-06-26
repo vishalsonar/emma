@@ -23,6 +23,7 @@ public class FrequencyModulationTask {
         if (TaskUtil.inBusinessHour() && LocalTime.now(ZoneId.of(Constant.ASIA_KOLKATA)).isAfter(LocalTime.parse(Constant.TIME_15_30))) {
             String documentName = new SimpleDateFormat(Constant.DOCUMENT_DATE_FORMAT_PATTERN).format(new Date());
             fireBaseService.mergeFrequency(documentName);
+            fireBaseService.updateTaskStatus(Constant.FREQUENCY_MODULATION_TASK_NAME);
         }
     }
 }

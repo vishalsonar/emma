@@ -58,6 +58,7 @@ public class DataAcquisitionTask {
             String[] parseDateArray = dateWebElement.getText().split(Constant.SPACE_REGEX);
             String documentName = getDocumentName(parseDateArray);
             fireBaseService.addOrUpdateDocument(dataList, documentName);
+            fireBaseService.updateTaskStatus(Constant.DATA_AQUISITION_TASK_NAME);
             chromeDriver.close();
         } catch (InterruptedException interruptedException) {
             Constant.eventBus.post(new LogErrorEvent().setMessage("DataAcquisitionTask :: execute :: Thread Interrupted Exception.").setException(interruptedException));

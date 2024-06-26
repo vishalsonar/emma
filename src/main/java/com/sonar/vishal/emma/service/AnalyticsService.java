@@ -2,6 +2,7 @@ package com.sonar.vishal.emma.service;
 
 import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.entity.FrequencyData;
+import com.sonar.vishal.emma.entity.TaskData;
 import com.sonar.vishal.emma.util.ComponentUtil;
 import com.sonar.vishal.emma.util.Constant;
 import com.vaadin.flow.component.grid.Grid;
@@ -11,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class AnalyticsService implements Serializable {
 
@@ -28,10 +30,25 @@ public class AnalyticsService implements Serializable {
         List<FrequencyData> frequencyDataList = new ArrayList<>(fireBaseService.getFrequencyData().entrySet().stream()
                 .map(entry -> createFrequencyData(entry.getKey(), String.valueOf(entry.getValue()))).toList());
         if (frequencyDataList.isEmpty()) {
-            ComponentUtil.getNotification("Failed to Load Gainer Frequency.", true).open();
+            ComponentUtil.getNotification("Failed to load Gainer Frequency.", true).open();
         }
         frequencyDataGrid.setItems(sortFrequencyDataByOccurrence(frequencyDataList));
         return frequencyDataGrid;
+    }
+
+    public Grid<TaskData> getTaskStatusDataGrid() {
+        Grid<TaskData> taskStatusDataGrid = ComponentUtil.getTaskStatusGrid();
+        List<TaskData> taskStatusDataList = new ArrayList<>(fireBaseService.getTaskStatus().entrySet().stream().map(entry -> {
+            TaskData taskData = new TaskData();
+            taskData.setName(entry.getKey());
+            taskData.setLastExecution(entry.getValue().toString());
+            return taskData;
+        }).collect(Collectors.toList()));
+        if (taskStatusDataList.isEmpty()) {
+            ComponentUtil.getNotification("Failed to load Task Status.", true).open();
+        }
+        taskStatusDataGrid.setItems(taskStatusDataList);
+        return taskStatusDataGrid;
     }
 
     public Grid<Data> getTodayDataGrid() {
@@ -41,18 +58,18 @@ public class AnalyticsService implements Serializable {
         if (dataMap != null && !dataMap.isEmpty()) {
             dataList = dataMap.entrySet().stream().map(Map.Entry::getValue).toList();
         } else {
-            ComponentUtil.getNotification("Failed to Load Gainer Today Data.", true).open();
+            ComponentUtil.getNotification("Failed to load Gainer Today Data.", true).open();
         }
         grid.setItems(sortDataByPercentageChange(new ArrayList<>(dataList)));
         return grid;
     }
 
     public Grid<Data> getWeekDataGrid() {
-        return getGridData(getCalendar(1), getCalendar(7), "Failed to Load Gainer Week Data.");
+        return getGridData(getCalendar(1), getCalendar(7), "Failed to load Gainer Week Data.");
     }
 
     public Grid<Data> getMonthDataGrid() {
-        return getGridData(getStartOfMonthCalendar(), getEndOfMonthCalendar(), "Failed to Load Gainer Month Data.");
+        return getGridData(getStartOfMonthCalendar(), getEndOfMonthCalendar(), "Failed to load Gainer Month Data.");
     }
 
     private FrequencyData createFrequencyData(String companyName, String occurrence) {
