@@ -10,6 +10,7 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.sonar.vishal.emma.bus.LogErrorEvent;
 import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.util.Constant;
+import com.sonar.vishal.emma.util.TaskUtil;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,13 +19,11 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -65,9 +64,19 @@ public class FireBaseService implements Serializable {
                 FirebaseOptions options = FirebaseOptions.builder().setCredentials(credentials).build();
                 FirebaseApp.initializeApp(options);
                 firestore = FirestoreClient.getFirestore();
+                init();
             }
         } catch (Exception exception) {
             Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: static :: Error while initializing account.").setException(exception));
+        }
+    }
+
+    private static void init() throws ExecutionException, InterruptedException {
+        if (firestore.collection(Constant.ANALYTICS).document(Constant.FREQUENCY).get().get().getData() == null) {
+            firestore.collection(Constant.ANALYTICS).document(Constant.FREQUENCY).set(Collections.emptyMap());
+        }
+        if (firestore.collection(Constant.ANALYTICS).document(Constant.TASK).get().get().getData() == null) {
+            firestore.collection(Constant.ANALYTICS).document(Constant.TASK).set(Collections.emptyMap());
         }
     }
 
@@ -151,7 +160,7 @@ public class FireBaseService implements Serializable {
 
     public void updateTaskStatus(String taskName) {
         try {
-            String dateTimeNow = LocalDate.now(ZoneId.of(Constant.ASIA_KOLKATA)) + Constant.SPACE_REGEX + Constant.HYPHEN + Constant.SPACE_REGEX + LocalTime.now(ZoneId.of(Constant.ASIA_KOLKATA));
+            String dateTimeNow = TaskUtil.getIndiaDateTimeNow();
             Map<String, Object> remoteTaskListMap = firestore.collection(Constant.ANALYTICS).document(Constant.TASK).get().get().getData();
             if (remoteTaskListMap == null) {
                 firestore.collection(Constant.ANALYTICS).document(Constant.TASK).set(Collections.singletonMap(taskName, dateTimeNow));

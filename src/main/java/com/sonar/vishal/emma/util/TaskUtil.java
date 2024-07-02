@@ -1,5 +1,8 @@
 package com.sonar.vishal.emma.util;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -7,6 +10,12 @@ public class TaskUtil {
 
     private TaskUtil() {
         // Prevent Instantiation
+    }
+
+    public static String getIndiaDateTimeNow() {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(Constant.DATE_TIME_FORMAT_PATTERN);
+        dateTimeFormatter = dateTimeFormatter.withZone(ZoneId.of(Constant.ASIA_KOLKATA));
+        return dateTimeFormatter.format(Instant.now()).toString();
     }
 
     public static boolean inBusinessHour() {

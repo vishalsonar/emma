@@ -5,6 +5,8 @@ public class FrequencyData {
     private String companyName;
     private String occurrence;
     private String averagePercentage;
+    private String xDot;
+    private String xDotDot;
 
     public String getCompanyName() {
         return companyName;
@@ -28,5 +30,21 @@ public class FrequencyData {
 
     public void setAveragePercentage(String averagePercentage) {
         this.averagePercentage = averagePercentage;
+    }
+
+    public String getxDot() {
+        return xDot;
+    }
+
+    public void setxDot(String xDot) {
+        this.xDot = xDot;
+    }
+
+    public String getxDotDot() {
+        return xDotDot;
+    }
+
+    public void setxDotDot(String xDotDot) {
+        this.xDotDot = xDotDot;
     }
 }

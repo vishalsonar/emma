@@ -29,6 +29,7 @@ public class Constant {
     public static final String GAINER_MONTH = "Gainer Month";
     public static final String GAINER_FREQUENCY = "Gainer Frequency";
     public static final String DOCUMENT_DATE_FORMAT_PATTERN = "dd-MM-yyyy";
+    public static final String DATE_TIME_FORMAT_PATTERN = "dd-MM-yyyy HH:mm:ss";
 
     public static final String COMMA = ",";
     public static final String HYPHEN = "-";

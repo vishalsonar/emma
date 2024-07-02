@@ -4,6 +4,7 @@ import com.sonar.vishal.emma.service.FireBaseService;
 import com.sonar.vishal.emma.util.Constant;
 import com.sonar.vishal.emma.util.TaskUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import java.time.ZoneId;
 import java.util.Date;
 
 @Component
+@Profile("TASK")
 public class FrequencyModulationTask {
 
     @Autowired

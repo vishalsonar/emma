@@ -78,6 +78,8 @@ public class AnalyticsService implements Serializable {
         frequencyData.setCompanyName(companyName);
         frequencyData.setOccurrence(valueString[0]);
         frequencyData.setAveragePercentage(valueString[1]);
+        frequencyData.setxDot(String.valueOf(Double.valueOf(frequencyData.getAveragePercentage())/Double.valueOf(frequencyData.getOccurrence())));
+        frequencyData.setxDotDot(String.valueOf(Double.valueOf(frequencyData.getxDot())/Double.valueOf(frequencyData.getOccurrence())));
         return frequencyData;
     }
 

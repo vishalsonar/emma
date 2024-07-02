@@ -9,6 +9,8 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.dom.Style;
 
+import java.util.Date;
+
 public class ComponentUtil {
 
     private ComponentUtil() {
@@ -16,8 +18,11 @@ public class ComponentUtil {
     }
 
     private static final String EMMA = "EMMA";
+    private static final String DOT = "DOT";
+    private static final String DOT_DOT = "DOT DOT";
     private static final String TASK_NAME = "Task Name";
     private static final String FIFTY_PERCENTAGE = "50%";
+    private static final String TWENTY_PERCENTAGE = "20%";
     private static final String OCCURRENCE = "Occurrence";
     private static final String COMPANY_NAME = "Company Name";
     private static final String TWENTY_FIVE_PERCENTAGE = "25%";
@@ -34,6 +39,14 @@ public class ComponentUtil {
         return logo;
     }
 
+    public static Span getDateTime() {
+        Span time = new Span(new Date().toString());
+        Style timeStyle = time.getStyle();
+        timeStyle.set("width", "100%");
+        timeStyle.set("text-align", "center");
+        return time;
+    }
+
     public static Grid<Data> getGrid() {
         Grid<Data> grid = new Grid<>(Data.class, false);
         grid.addColumn(Data::getCompanyName).setHeader(COMPANY_NAME).setWidth(FIFTY_PERCENTAGE);
@@ -46,9 +59,11 @@ public class ComponentUtil {
 
     public static Grid<FrequencyData> getFrequencyGrid() {
         Grid<FrequencyData> grid = new Grid<>(FrequencyData.class, false);
-        grid.addColumn(FrequencyData::getCompanyName).setHeader(COMPANY_NAME).setWidth(FIFTY_PERCENTAGE);
-        grid.addColumn(FrequencyData::getOccurrence).setHeader(OCCURRENCE).setWidth(TWENTY_FIVE_PERCENTAGE);
-        grid.addColumn(FrequencyData::getAveragePercentage).setHeader(PERCENTAGE_CHANGE).setWidth(TWENTY_FIVE_PERCENTAGE);
+        grid.addColumn(FrequencyData::getCompanyName).setHeader(COMPANY_NAME).setWidth(TWENTY_PERCENTAGE);
+        grid.addColumn(FrequencyData::getOccurrence).setHeader(OCCURRENCE).setWidth(TWENTY_PERCENTAGE);
+        grid.addColumn(FrequencyData::getAveragePercentage).setHeader(PERCENTAGE_CHANGE).setWidth(TWENTY_PERCENTAGE);
+        grid.addColumn(FrequencyData::getxDot).setHeader(DOT).setWidth(TWENTY_PERCENTAGE);
+        grid.addColumn(FrequencyData::getxDotDot).setHeader(DOT_DOT).setWidth(TWENTY_PERCENTAGE);
         grid.setWidthFull();
         grid.setHeightFull();
         return grid;
