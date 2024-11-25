@@ -1,5 +1,6 @@
 package com.sonar.vishal.emma.view;
 
+import com.sonar.vishal.emma.context.Context;
 import com.sonar.vishal.emma.service.AnalyticsService;
 import com.sonar.vishal.emma.task.DateTimeTask;
 import com.sonar.vishal.emma.util.ComponentUtil;
@@ -17,12 +18,11 @@ import org.springframework.context.annotation.Profile;
 @Route(Constant.EMPTY)
 public class DashBoardView extends VerticalLayout {
 
-    private AnalyticsService analyticsService;
-
     public DashBoardView() {
         setWidthFull();
         setHeightFull();
-        analyticsService = new AnalyticsService();
+        AnalyticsService analyticsService = Context.getBean(AnalyticsService.class);
+
         add(ComponentUtil.getLogo());
         add(new Html(Constant.HTML_HR));
         add(ComponentUtil.getDateTime());

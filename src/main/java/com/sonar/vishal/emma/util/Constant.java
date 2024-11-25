@@ -20,6 +20,7 @@ public class Constant {
 
     public static final String PIPE = "|";
     public static final String PIPE_REGEX = "\\|";
+    public static final String ROUND_DECIMAL_REGEX = "%.2f";
 
     public static final String EMPTY = "";
     public static final String HTML_HR = "<hr>";

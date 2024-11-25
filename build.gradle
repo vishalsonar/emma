@@ -32,6 +32,8 @@ dependencies {
 	implementation('org.seleniumhq.selenium:selenium-java:4.16.1')
 	implementation('com.google.firebase:firebase-admin:9.2.0')
 	implementation('com.google.guava:guava:33.2.1-jre')
+	implementation(fileTree('src/libs').include('kiteconnect.jar'))
+
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'

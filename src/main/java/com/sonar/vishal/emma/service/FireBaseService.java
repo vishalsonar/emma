@@ -12,7 +12,6 @@ import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.util.Constant;
 import com.sonar.vishal.emma.util.TaskUtil;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -47,12 +46,6 @@ public class FireBaseService implements Serializable {
     @Value("${application.frequency.cache.expireAfterWrite.minutes}")
     private String frequencyExpiryMinutes;
 
-    @Autowired
-    private DataCacheService dataCacheService;
-
-    @Autowired
-    private FrequencyCacheService frequencyCacheService;
-
     static {
         try {
             if (firestore == null) {
@@ -67,6 +60,9 @@ public class FireBaseService implements Serializable {
                 init();
             }
         } catch (Exception exception) {
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: static :: Error while initializing account.").setException(exception));
         }
     }
@@ -83,13 +79,41 @@ public class FireBaseService implements Serializable {
     @PostConstruct
     private void postConstruct() {
         if (dataCache == null) {
-            dataCacheService.setFirestore(firestore);
+            CacheService<String, String, Data> dataCacheService = new CacheService<>();
+            dataCacheService.setFunction(this::dataCacheFunction);
             dataCache = CacheBuilder.newBuilder().maximumSize(Integer.parseInt(dataMaximumSize)).expireAfterWrite(Integer.parseInt(dataExpiryMinutes), TimeUnit.MINUTES).build(dataCacheService);
         }
         if (frequencyCache == null) {
-            frequencyCacheService.setFirestore(firestore);
+            CacheService<String, String, Object> frequencyCacheService = new CacheService<>();
+            frequencyCacheService.setFunction(this::frequencyCacheFunction);
             frequencyCache = CacheBuilder.newBuilder().maximumSize(Integer.parseInt(frequencyMaximumSize)).expireAfterWrite(Integer.parseInt(frequencyExpiryMinutes), TimeUnit.MINUTES).build(frequencyCacheService);
         }
+    }
+
+    private Map<String, Object> frequencyCacheFunction(String collectionName) {
+        Map<String, Object> frequencyData = null;
+        try {
+            frequencyData = firestore.collection(Constant.ANALYTICS).document(Constant.FREQUENCY).get().get().getData();
+        } catch (Exception exception) {
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: frequencyCacheFunction :: Error while loading cache data.").setException(exception));
+        }
+        return frequencyData;
+    }
+
+    private Map<String, Data> dataCacheFunction(String collectionName) {
+        Map<String, Data> dataMap = new HashMap<>();
+        try {
+            firestore.collection(collectionName).get().get().getDocuments().forEach(document -> dataMap.put(document.getId(), document.toObject(Data.class)));
+        } catch (Exception exception) {
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: dataCacheFunction :: Error while loading cache data.").setException(exception));
+        }
+        return dataMap;
     }
 
     public void addOrUpdateDocument(List<Data> dataList, String documentName) {
@@ -98,14 +122,15 @@ public class FireBaseService implements Serializable {
             Map<String, String> dataListMap = dataList.stream().collect(Collectors.toMap(Data::getCompanyName, Data::getPercentageChange));
             Map<String, Object> remoteDataListMap = firestore.collection(Constant.ANALYTICS).document(documentName).get().get().getData();
             if (remoteDataListMap != null) {
-                remoteDataListMap.entrySet().forEach(entry -> {
-                    if (!dataListMap.containsKey(entry.getKey())) {
-                        dataListMap.put(entry.getKey(), entry.getValue().toString());
-                    }
+                remoteDataListMap.forEach((key, value) -> {
+                    if (!dataListMap.containsKey(key)) dataListMap.put(key, String.valueOf(value));
                 });
             }
             firestore.collection(Constant.ANALYTICS).document(documentName).set(dataListMap);
         } catch (Exception exception) {
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: addOrUpdateDocument :: Unable to add or udpate document.").setException(exception));
         }
     }
@@ -140,35 +165,39 @@ public class FireBaseService implements Serializable {
             if (remoteDataListMap == null) {
                 return;
             }
-            remoteDataListMap.entrySet().forEach(entry -> {
-                if (frequencyData.containsKey(entry.getKey())) {
-                    String[] valueString = frequencyData.get(entry.getKey()).toString().split(Constant.PIPE_REGEX);
+            remoteDataListMap.forEach((key, value) -> {
+                count.set(1L);
+                averageFrequency.set(String.valueOf(value));
+                if (frequencyData.containsKey(key)) {
+                    String[] valueString = frequencyData.get(key).toString().split(Constant.PIPE_REGEX);
                     count.set((Long.parseLong(valueString[0]) + 1));
-                    averageFrequency.set(String.valueOf((Double.parseDouble(valueString[1]) + Double.parseDouble(entry.getValue().toString())) / 2.0d));
-                } else {
-                    count.set(1L);
-                    averageFrequency.set(entry.getValue().toString());
+                    Double frequency = (Double.parseDouble(valueString[1]) + Double.parseDouble(String.valueOf(value))) / 2.0d;
+                    averageFrequency.set(String.format(Constant.ROUND_DECIMAL_REGEX, frequency));
                 }
-                newFrequencydata.put(entry.getKey(), count.get() + Constant.PIPE + averageFrequency.get());
+                newFrequencydata.put(key, count.get() + Constant.PIPE + averageFrequency.get());
             });
             firestore.collection(Constant.ANALYTICS).document(Constant.FREQUENCY).set(newFrequencydata);
             firestore.collection(Constant.ANALYTICS).document(documentName).delete();
         } catch (Exception exception) {
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: mergeFrequency :: Failed to merge Frequency.").setException(exception));
         }
     }
 
     public void updateTaskStatus(String taskName) {
         try {
-            String dateTimeNow = TaskUtil.getIndiaDateTimeNow();
             Map<String, Object> remoteTaskListMap = firestore.collection(Constant.ANALYTICS).document(Constant.TASK).get().get().getData();
             if (remoteTaskListMap == null) {
-                firestore.collection(Constant.ANALYTICS).document(Constant.TASK).set(Collections.singletonMap(taskName, dateTimeNow));
-            } else {
-                remoteTaskListMap.put(taskName, dateTimeNow);
-                firestore.collection(Constant.ANALYTICS).document(Constant.TASK).set(remoteTaskListMap);
+                remoteTaskListMap = new HashMap<>();
             }
+            remoteTaskListMap.put(taskName, TaskUtil.getIndiaDateTimeNow());
+            firestore.collection(Constant.ANALYTICS).document(Constant.TASK).set(remoteTaskListMap);
         } catch (Exception exception) {
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: updateTaskStatus :: Failed to update Task Status.").setException(exception));
         }
     }
@@ -178,6 +207,9 @@ public class FireBaseService implements Serializable {
         try {
             remoteTaskListMap = firestore.collection(Constant.ANALYTICS).document(Constant.TASK).get().get().getData();
         } catch (Exception exception) {
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: getTaskStatus :: Failed get Task Status.").setException(exception));
         } finally {
             if (remoteTaskListMap == null) {
