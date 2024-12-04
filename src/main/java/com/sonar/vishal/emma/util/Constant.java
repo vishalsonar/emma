@@ -5,10 +5,11 @@ import com.sonar.vishal.emma.bus.LogEventListener;
 
 public class Constant {
 
-    public static final EventBus eventBus = new EventBus();
+    public static final EventBus LOG_EVENT_BUS = new EventBus("LOG EVENT BUS");
+    public static final EventBus ORDER_EVENT_BUS = new EventBus("ORDER EVENT BUS");
 
     static {
-        eventBus.register(new LogEventListener());
+        LOG_EVENT_BUS.register(new LogEventListener());
     }
 
     private Constant() {

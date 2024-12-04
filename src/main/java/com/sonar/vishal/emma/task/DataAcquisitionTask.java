@@ -63,10 +63,10 @@ public class DataAcquisitionTask {
             fireBaseService.updateTaskStatus(Constant.DATA_AQUISITION_TASK_NAME);
             chromeDriver.close();
         } catch (InterruptedException interruptedException) {
-            Constant.eventBus.post(new LogErrorEvent().setMessage("DataAcquisitionTask :: execute :: Thread Interrupted Exception.").setException(interruptedException));
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("DataAcquisitionTask :: execute :: Thread Interrupted Exception.").setException(interruptedException));
             Thread.currentThread().interrupt();
         } catch (Exception exception) {
-            Constant.eventBus.post(new LogErrorEvent().setMessage("DataAcquisitionTask :: execute :: Error while executing task.").setException(exception));
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("DataAcquisitionTask :: execute :: Error while executing task.").setException(exception));
         }
     }
 

@@ -63,7 +63,7 @@ public class FireBaseService implements Serializable {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: static :: Error while initializing account.").setException(exception));
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: static :: Error while initializing account.").setException(exception));
         }
     }
 
@@ -98,7 +98,7 @@ public class FireBaseService implements Serializable {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: frequencyCacheFunction :: Error while loading cache data.").setException(exception));
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: frequencyCacheFunction :: Error while loading cache data.").setException(exception));
         }
         return frequencyData;
     }
@@ -111,7 +111,7 @@ public class FireBaseService implements Serializable {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: dataCacheFunction :: Error while loading cache data.").setException(exception));
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: dataCacheFunction :: Error while loading cache data.").setException(exception));
         }
         return dataMap;
     }
@@ -131,7 +131,7 @@ public class FireBaseService implements Serializable {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: addOrUpdateDocument :: Unable to add or udpate document.").setException(exception));
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: addOrUpdateDocument :: Unable to add or udpate document.").setException(exception));
         }
     }
 
@@ -140,7 +140,7 @@ public class FireBaseService implements Serializable {
         try {
             dataMap = dataCache.get(collectionName);
         } catch (Exception exception) {
-            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: getCollectionMapData :: Cache read exception.").setException(exception));
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: getCollectionMapData :: Cache read exception.").setException(exception));
         }
         return dataMap;
     }
@@ -150,7 +150,7 @@ public class FireBaseService implements Serializable {
         try {
             frequencyData = frequencyCache.get(Constant.EMPTY);
         } catch (Exception exception) {
-            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: getFrequencyData :: Failed to update Frequency.").setException(exception));
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: getFrequencyData :: Failed to update Frequency.").setException(exception));
         }
         return frequencyData;
     }
@@ -182,7 +182,7 @@ public class FireBaseService implements Serializable {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: mergeFrequency :: Failed to merge Frequency.").setException(exception));
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: mergeFrequency :: Failed to merge Frequency.").setException(exception));
         }
     }
 
@@ -198,7 +198,7 @@ public class FireBaseService implements Serializable {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: updateTaskStatus :: Failed to update Task Status.").setException(exception));
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: updateTaskStatus :: Failed to update Task Status.").setException(exception));
         }
     }
 
@@ -210,7 +210,7 @@ public class FireBaseService implements Serializable {
             if (exception instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            Constant.eventBus.post(new LogErrorEvent().setMessage("FireBaseService :: getTaskStatus :: Failed get Task Status.").setException(exception));
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: getTaskStatus :: Failed get Task Status.").setException(exception));
         } finally {
             if (remoteTaskListMap == null) {
                 remoteTaskListMap = Collections.emptyMap();

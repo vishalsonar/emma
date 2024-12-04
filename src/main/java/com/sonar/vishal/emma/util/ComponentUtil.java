@@ -19,13 +19,19 @@ public class ComponentUtil {
 
     private static final String EMMA = "EMMA";
     private static final String DOT = "DOT";
+    private static final String WIDTH = "width";
+    private static final String CENTER = "center";
     private static final String DOT_DOT = "DOT DOT";
+    private static final String FOUR_ZERO_PX = "40px";
+    private static final String FONT_SIZE = "font-size";
     private static final String TASK_NAME = "Task Name";
     private static final String FIFTY_PERCENTAGE = "50%";
     private static final String TWENTY_PERCENTAGE = "20%";
     private static final String OCCURRENCE = "Occurrence";
+    private static final String TEXT_ALIGN = "text-align";
     private static final String COMPANY_NAME = "Company Name";
     private static final String TWENTY_FIVE_PERCENTAGE = "25%";
+    private static final String ONE_ZERO_ZERO_PERCENTAGE = "100%";
     private static final String LAST_TRADE_PRICE = "Last Trade Price";
     private static final String TASK_LAST_EXECUTION = "Last Execution";
     private static final String PERCENTAGE_CHANGE = "Percentage Change";
@@ -33,17 +39,17 @@ public class ComponentUtil {
     public static Span getLogo() {
         Span logo = new Span(EMMA);
         Style logoStyle = logo.getStyle();
-        logoStyle.set("width", "100%");
-        logoStyle.set("font-size", "40px");
-        logoStyle.set("text-align", "center");
+        logoStyle.set(WIDTH, ONE_ZERO_ZERO_PERCENTAGE);
+        logoStyle.set(FONT_SIZE, FOUR_ZERO_PX);
+        logoStyle.set(TEXT_ALIGN, CENTER);
         return logo;
     }
 
     public static Span getDateTime() {
         Span time = new Span(new Date().toString());
         Style timeStyle = time.getStyle();
-        timeStyle.set("width", "100%");
-        timeStyle.set("text-align", "center");
+        timeStyle.set(WIDTH, ONE_ZERO_ZERO_PERCENTAGE);
+        timeStyle.set(TEXT_ALIGN, CENTER);
         return time;
     }
 
