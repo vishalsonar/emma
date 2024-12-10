@@ -1,5 +1,6 @@
 package com.sonar.vishal.emma.service;
 
+import com.sonar.vishal.emma.entity.CompanyNameData;
 import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.entity.FrequencyData;
 import com.sonar.vishal.emma.entity.TaskData;
@@ -48,6 +49,21 @@ public class AnalyticsService implements Serializable {
         return taskStatusDataGrid;
     }
 
+    public Grid<CompanyNameData> getCompanyNameData() {
+        List<CompanyNameData> companyNameDataList = new ArrayList<>();
+        Grid<CompanyNameData> companyNameDataGrid = ComponentUtil.getCompanyNameGrid(fireBaseService);
+        fireBaseService.getCompanyNameData().forEach((key, value) -> {
+            if (String.valueOf(value).equals(Constant.EMPTY)) {
+                companyNameDataList.add(createCompanyNameData(key, Constant.EMPTY));
+            }
+        });
+        if (companyNameDataList.isEmpty()) {
+            ComponentUtil.getNotification("Failed to load Company Name Data Map.", true).open();
+        }
+        companyNameDataGrid.setItems(companyNameDataList);
+        return companyNameDataGrid;
+    }
+
     public Grid<Data> getTodayDataGrid() {
         Grid<Data> grid = ComponentUtil.getGrid();
         List<Data> dataList = new ArrayList<>(fireBaseService.getCollectionMapData(dateFormat.format(new Date())).values());
@@ -83,6 +99,13 @@ public class AnalyticsService implements Serializable {
         taskData.setName(name);
         taskData.setLastExecution(lastExecution);
         return taskData;
+    }
+
+    private CompanyNameData createCompanyNameData(String economicTimesName, String zerodhaName) {
+        CompanyNameData companyNameData = new CompanyNameData();
+        companyNameData.setEconomicTimesName(economicTimesName);
+        companyNameData.setZerodhaName(zerodhaName);
+        return companyNameData;
     }
 
     private Grid<Data> getGridData(Calendar startOfWeekCalender, Calendar endOfWeekCalender, String errorMessage) {

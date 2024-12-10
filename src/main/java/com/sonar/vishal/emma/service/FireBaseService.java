@@ -33,6 +33,9 @@ public class FireBaseService implements Serializable {
     private static Firestore firestore;
     private static LoadingCache<String, Map<String, Data>> dataCache;
     private static LoadingCache<String, Map<String, Object>> frequencyCache;
+    private static LoadingCache<String, Map<String, Object>> companyNameCache;
+
+    private boolean updateCompanyName;
 
     @Value("${application.data.cache.maximumSize}")
     private String dataMaximumSize;
@@ -45,6 +48,12 @@ public class FireBaseService implements Serializable {
 
     @Value("${application.frequency.cache.expireAfterWrite.minutes}")
     private String frequencyExpiryMinutes;
+
+    @Value("${application.company.name.cache.maximumSize}")
+    private String companyNameMaximumSize;
+
+    @Value("${application.company.name.cache.expireAfterWrite.minutes}")
+    private String companyNameExpiryMinutes;
 
     static {
         try {
@@ -74,6 +83,9 @@ public class FireBaseService implements Serializable {
         if (firestore.collection(Constant.ANALYTICS).document(Constant.TASK).get().get().getData() == null) {
             firestore.collection(Constant.ANALYTICS).document(Constant.TASK).set(Collections.emptyMap());
         }
+        if (firestore.collection(Constant.ANALYTICS).document(Constant.COMPANY_NAME_MAP).get().get().getData() == null) {
+            firestore.collection(Constant.ANALYTICS).document(Constant.COMPANY_NAME_MAP).set(Collections.emptyMap());
+        }
     }
 
     @PostConstruct
@@ -87,6 +99,11 @@ public class FireBaseService implements Serializable {
             CacheService<String, String, Object> frequencyCacheService = new CacheService<>();
             frequencyCacheService.setFunction(this::frequencyCacheFunction);
             frequencyCache = CacheBuilder.newBuilder().maximumSize(Integer.parseInt(frequencyMaximumSize)).expireAfterWrite(Integer.parseInt(frequencyExpiryMinutes), TimeUnit.MINUTES).build(frequencyCacheService);
+        }
+        if (companyNameCache == null) {
+            CacheService<String, String, Object> companyNameCacheService = new CacheService<>();
+            companyNameCacheService.setFunction(this::companyNameCacheFunction);
+            companyNameCache = CacheBuilder.newBuilder().maximumSize(Integer.parseInt(companyNameMaximumSize)).expireAfterWrite(Integer.parseInt(companyNameExpiryMinutes), TimeUnit.MINUTES).build(companyNameCacheService);
         }
     }
 
@@ -112,6 +129,19 @@ public class FireBaseService implements Serializable {
                 Thread.currentThread().interrupt();
             }
             Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: dataCacheFunction :: Error while loading cache data.").setException(exception));
+        }
+        return dataMap;
+    }
+
+    private Map<String, Object> companyNameCacheFunction(String companyName) {
+        Map<String, Object> dataMap = new HashMap<>();
+        try {
+            dataMap = firestore.collection(Constant.ANALYTICS).document(Constant.COMPANY_NAME_MAP).get().get().getData();
+        } catch (Exception exception) {
+            if (exception instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: companyNameCacheFunction :: Error while loading cache data.").setException(exception));
         }
         return dataMap;
     }
@@ -153,6 +183,29 @@ public class FireBaseService implements Serializable {
             Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: getFrequencyData :: Failed to update Frequency.").setException(exception));
         }
         return frequencyData;
+    }
+
+    public Map<String, Object> getCompanyNameData() {
+        Map<String, Object> companyNameData = new HashMap<>();
+        try {
+            if (updateCompanyName) {
+                updateCompanyName = false;
+                companyNameCache.refresh(Constant.EMPTY);
+            }
+            companyNameData = companyNameCache.get(Constant.EMPTY);
+        } catch (Exception exception) {
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: getCompanyNameData :: Failed to update Company Name.").setException(exception));
+        }
+        return companyNameData;
+    }
+
+    public void setCompanyNameData(Map<String, Object> companyNameMap) {
+        try {
+            updateCompanyName = true;
+            firestore.collection(Constant.ANALYTICS).document(Constant.COMPANY_NAME_MAP).set(companyNameMap);
+        } catch (Exception exception) {
+            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("FireBaseService :: setCompanyName :: Failed to update Company Name.").setException(exception));
+        }
     }
 
     public void mergeFrequency(String documentName) {

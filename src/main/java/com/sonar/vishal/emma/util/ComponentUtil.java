@@ -1,12 +1,19 @@
 package com.sonar.vishal.emma.util;
 
+import com.sonar.vishal.emma.entity.CompanyNameData;
 import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.entity.FrequencyData;
 import com.sonar.vishal.emma.entity.TaskData;
+import com.sonar.vishal.emma.listener.CompanyNameEditorCloseListener;
+import com.sonar.vishal.emma.listener.CompanyNameItemDoubleClickListener;
+import com.sonar.vishal.emma.service.FireBaseService;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.editor.Editor;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.dom.Style;
 
 import java.util.Date;
@@ -29,12 +36,15 @@ public class ComponentUtil {
     private static final String TWENTY_PERCENTAGE = "20%";
     private static final String OCCURRENCE = "Occurrence";
     private static final String TEXT_ALIGN = "text-align";
+    private static final String ZERODHA_NAME = "Zerodha Name";
     private static final String COMPANY_NAME = "Company Name";
     private static final String TWENTY_FIVE_PERCENTAGE = "25%";
     private static final String ONE_ZERO_ZERO_PERCENTAGE = "100%";
     private static final String LAST_TRADE_PRICE = "Last Trade Price";
     private static final String TASK_LAST_EXECUTION = "Last Execution";
     private static final String PERCENTAGE_CHANGE = "Percentage Change";
+    private static final String ECONOMICS_TIMES_NAME = "Economic Times Name";
+
 
     public static Span getLogo() {
         Span logo = new Span(EMMA);
@@ -79,6 +89,23 @@ public class ComponentUtil {
         Grid<TaskData> grid = new Grid<>(TaskData.class, false);
         grid.addColumn(TaskData::getName).setHeader(TASK_NAME).setWidth(FIFTY_PERCENTAGE);
         grid.addColumn(TaskData::getLastExecution).setHeader(TASK_LAST_EXECUTION).setWidth(FIFTY_PERCENTAGE);
+        grid.setWidthFull();
+        grid.setHeightFull();
+        return grid;
+    }
+
+    public static Grid<CompanyNameData> getCompanyNameGrid(FireBaseService fireBaseService) {
+        Grid<CompanyNameData> grid = new Grid<>(CompanyNameData.class, false);
+        Binder<CompanyNameData> companyNameDataBinder = new Binder<>(CompanyNameData.class);
+        Editor<CompanyNameData> companyNameDataEditor = grid.getEditor();
+        TextField zerodhaNameTextField = new TextField();
+        zerodhaNameTextField.setWidthFull();
+        companyNameDataEditor.setBinder(companyNameDataBinder);
+        companyNameDataEditor.addCloseListener(editorCloseEvent -> new CompanyNameEditorCloseListener<CompanyNameData>(fireBaseService).onEditorClose(editorCloseEvent));
+        companyNameDataBinder.forField(zerodhaNameTextField).bind(CompanyNameData::getZerodhaName, CompanyNameData::setZerodhaName);
+        grid.addItemDoubleClickListener(doubleClickEvent -> new CompanyNameItemDoubleClickListener<CompanyNameData>(companyNameDataEditor).onComponentEvent(doubleClickEvent));
+        grid.addColumn(CompanyNameData::getEconomicTimesName).setHeader(ECONOMICS_TIMES_NAME).setWidth(FIFTY_PERCENTAGE);
+        grid.addColumn(CompanyNameData::getZerodhaName).setHeader(ZERODHA_NAME).setWidth(FIFTY_PERCENTAGE).setEditorComponent(zerodhaNameTextField);
         grid.setWidthFull();
         grid.setHeightFull();
         return grid;

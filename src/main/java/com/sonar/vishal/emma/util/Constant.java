@@ -44,9 +44,12 @@ public class Constant {
     public static final String ANALYTICS = "ANALYTICS";
     public static final String FREQUENCY = "FREQUENCY";
     public static final String TASK = "TASK";
+    public static final String MAP_COMPANY_NAME = "Map Company Name";
+    public static final String COMPANY_NAME_MAP = "COMPANY_NAME_MAP";
     public static final String SERVICE_ACCOUNT_FILE_NAME = "emma-service-account.json";
     public static final String SYSTEM_SERVICE_ACCOUNT = "SYSTEM_SERVICE_ACCOUNT";
 
     public static final String FREQUENCY_MODULATION_TASK_NAME = "Frequency Modulation Task";
     public static final String DATA_AQUISITION_TASK_NAME = "Data Acquisition Task";
+    public static final String KITE_CONNECT_TASK_NAME = "Kite Connect Task";
 }

@@ -15,7 +15,7 @@ public class TaskUtil {
     public static String getIndiaDateTimeNow() {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(Constant.DATE_TIME_FORMAT_PATTERN);
         dateTimeFormatter = dateTimeFormatter.withZone(ZoneId.of(Constant.ASIA_KOLKATA));
-        return dateTimeFormatter.format(Instant.now()).toString();
+        return dateTimeFormatter.format(Instant.now());
     }
 
     public static boolean inBusinessHour() {
