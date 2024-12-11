@@ -4,21 +4,6 @@
 ![Static Badge](https://img.shields.io/badge/version-0.0.1-blue)
 
 ____
-#### Sonar Badges
-
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=vishalsonar_emma&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=vishalsonar_emma)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=vishalsonar_emma&metric=bugs)](https://sonarcloud.io/summary/new_code?id=vishalsonar_emma)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=vishalsonar_emma&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=vishalsonar_emma)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=vishalsonar_emma&metric=coverage)](https://sonarcloud.io/summary/new_code?id=vishalsonar_emma)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=vishalsonar_emma&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=vishalsonar_emma)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=vishalsonar_emma&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=vishalsonar_emma)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=vishalsonar_emma&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=vishalsonar_emma)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=vishalsonar_emma&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=vishalsonar_emma)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=vishalsonar_emma&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=vishalsonar_emma)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=vishalsonar_emma&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=vishalsonar_emma)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=vishalsonar_emma&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=vishalsonar_emma)
-
-___
 
 ![Alt text](src/main/resources/diagram.png)
 
