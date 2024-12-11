@@ -30,6 +30,7 @@ build/
 !**/src/main/**
 !**/src/test/**
 **/emma-service-account.json
+**/application-KITE.properties
 
 ### STS ###
 .apt_generated
