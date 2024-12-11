@@ -58,7 +58,7 @@ public class AnalyticsService implements Serializable {
             }
         });
         if (companyNameDataList.isEmpty()) {
-            ComponentUtil.getNotification("Failed to load Company Name Data Map.", true).open();
+            ComponentUtil.getNotification("Failed to load Company Name.", true).open();
         }
         companyNameDataGrid.setItems(companyNameDataList);
         return companyNameDataGrid;

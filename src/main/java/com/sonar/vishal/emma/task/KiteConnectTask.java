@@ -55,7 +55,7 @@ public class KiteConnectTask {
             init();
         }
         if (kiteConnect == null) {
-            return;
+            // return;
         }
         List<String> companyName = getCompanyNameList();
         companyName.stream().filter(name -> TradeAlgorithm.TRADE_STATUS.get(name) == null || TradeAlgorithm.TRADE_STATUS.get(name).equals(ThreadStatus.DEAD))

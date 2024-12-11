@@ -1,27 +1,29 @@
-package com.sonar.vishal.emma.algorithm;
-
-import org.springframework.stereotype.Service;
-
-@Service
-public class OneGainAlgorithm extends TradeAlgorithm {
-
-    @Override
-    public void run() {
-        System.out.println(companyName);
-    }
-
-    @Override
-    protected int calculateQuantity() {
-        return 0;
-    }
-
-    @Override
-    protected double calculateBuyPrice() {
-        return 0.0;
-    }
-
-    @Override
-    protected double calculateSellPrice() {
-        return 0.0;
-    }
-}
+SfJx8fdnMb3Av9CNPP9Q3lNsLw6odqNw3ex9Z/F0LLZ1siXkBy0YuqcDk98rVBub
+jC2xex7nE7s=
+S2Oya5arVdBQBYQH1eMGQxSEVmYbEa26YOvFgIDRYKAdQPrBQcfgbEf+wWUJU47E
+jC2xex7nE7s=
+fDxzwIxShZs7wE3GdEfpIA==
+QeljYJB4k4icX2iLJd13D2oKwIPxq98Oyhp9AhVyWm1U1utu7A4OvuZftxxdHnU5jVL1dwM60KM=
+jC2xex7nE7s=
+paOeyof1Egj3JfrgrvWDUg==
+gsEEcPgxaRFbE8H0mm+DV/XBC43lI0SV
+/gjEEvyz/D1Vhr3HscpROIbOvBWFqY3FyJHiWZ0HkEM9W7XqYvOQYg==
+/gjEEvyz/D3Ke5awERk4rHGIZ1D3eTQTk8KVFrXE25BitOCR6sEYrEGF5MY9MBZw
+/gjEEvyz/D29EUPCf8bmWA==
+o+RY4CVJJKc=
+jC2xex7nE7s=
+paOeyof1Egj3JfrgrvWDUg==
+JI7nartYtXhXQbnoU5pK8nxEA3mPmicayVYjDa/DcFdMVjmUrnrO3A==
+/gjEEvyz/D1XzdfhY/hF2drBQY+/ru9c
+o+RY4CVJJKc=
+jC2xex7nE7s=
+paOeyof1Egj3JfrgrvWDUg==
+JI7nartYtXidJyw5g+DYiSAJ/IwtOV2KziGKZZbQyvFH2NCYRipn5j082maVAQ/k
+/gjEEvyz/D1XzdfhY/hF2W8gHYdOJp6v
+o+RY4CVJJKc=
+jC2xex7nE7s=
+paOeyof1Egj3JfrgrvWDUg==
+JI7nartYtXidJyw5g+DYiSAJ/IwtOV2KH5WgzqCvSuGuGblwCf8AJHAcRIUoQM2g
+/gjEEvyz/D1XzdfhY/hF2W8gHYdOJp6v
+o+RY4CVJJKc=
+1h+IvT0eAFM=

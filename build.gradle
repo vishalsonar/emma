@@ -1,47 +1,116 @@
 buildscript {
     repositories {
-    	mavenCentral()
-	    maven { setUrl("https://maven.vaadin.com/vaadin-prereleases") }
-			maven { setUrl("https://repo.spring.io/milestone") }
-		}
+        mavenCentral()
+        maven { setUrl("https://maven.vaadin.com/vaadin-prereleases") }
+        maven { setUrl("https://repo.spring.io/milestone") }
+    }
 }
 
 plugins {
-	id 'org.springframework.boot' version '3.1.5'
-	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
-	id 'java'
-	id 'com.vaadin'
+    id 'org.springframework.boot' version '3.1.5'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'java'
+    id 'com.vaadin'
+    id 'maven-publish'
 }
 
+sourceCompatibility = 18
+targetCompatibility = 18
+archivesBaseName = 'emma'
+version = '0.0.1-SNAPSHOT'
+group = 'com.sonar.vishal'
+
 repositories {
-	mavenCentral()
-	maven { setUrl("https://maven.vaadin.com/vaadin-prereleases") }
-	maven { setUrl("https://repo.spring.io/milestone") }
-	maven { setUrl("https://maven.vaadin.com/vaadin-addons") }
+    mavenCentral()
+    maven { setUrl("https://maven.vaadin.com/vaadin-prereleases") }
+    maven { setUrl("https://repo.spring.io/milestone") }
+    maven { setUrl("https://maven.vaadin.com/vaadin-addons") }
 }
 
 configurations {
-	developmentOnly
-	runtimeClasspath {
-		extendsFrom developmentOnly
-	}
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
 }
 
 dependencies {
-	implementation('com.vaadin:vaadin-spring-boot-starter')
-	implementation('org.seleniumhq.selenium:selenium-java:4.16.1')
-	implementation('com.google.firebase:firebase-admin:9.2.0')
-	implementation('com.google.guava:guava:33.2.1-jre')
-	implementation(fileTree('src/libs').include('kiteconnect.jar'))
+    implementation('com.vaadin:vaadin-spring-boot-starter')
+    implementation('org.seleniumhq.selenium:selenium-java:4.16.1')
+    implementation('com.google.firebase:firebase-admin:9.2.0')
+    implementation('com.google.guava:guava:33.2.1-jre')
+    implementation(fileTree('src/libs').include('kiteconnect.jar'))
 
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	testImplementation('org.springframework.boot:spring-boot-starter-test') {
-		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-	}
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
 }
 
 dependencyManagement {
-	imports {
-		mavenBom "com.vaadin:vaadin-bom:$vaadinVersion"
-	}
+    imports {
+        mavenBom "com.vaadin:vaadin-bom:$vaadinVersion"
+    }
+}
+
+task doEncryption(type: Encryption) {
+    group 'Security'
+    description 'Encrypt Java Files.'
+}
+
+task doDecryption(type: Decryption) {
+    group 'Security'
+    description 'Decrypt Java Files.'
+}
+
+task gitAdd(type: Exec) {
+    group 'GIT'
+    description 'Add file contents to the index.'
+
+    workingDir '.'
+    commandLine 'sh', '-c', 'whoami'
+    if (project.hasProperty('amend') && project.hasProperty('message')) {
+        commandLine 'git', 'add', '.'
+    }
+}
+
+task gitCommit(type: Exec) {
+    group 'GIT'
+    description 'Commit record changes to the repository.'
+
+    workingDir '.'
+    commandLine 'sh', '-c', 'whoami'
+    if (project.hasProperty('amend') && project.hasProperty('message')) {
+        if (project.property('amend').toBoolean()) {
+            commandLine 'git', 'commit', '--amend', '--no-edit'
+        } else {
+            commandLine 'git', 'commit', '-m', project.property('message')
+        }
+    }
+}
+
+task gitPush(type: Exec) {
+    group 'GIT'
+    description 'Push update remote refs along with associated objects.'
+
+    workingDir '.'
+    commandLine 'sh', '-c', 'whoami'
+    if (project.hasProperty('amend') && project.hasProperty('message')) {
+        commandLine 'git', 'push', '-f'
+    }
+}
+
+task push(type: Exec) {
+    group 'Security'
+    description 'Git Push'
+
+    workingDir '.'
+    commandLine 'sh', '-c', 'whoami'
+    if (project.hasProperty('amend') && project.hasProperty('message')) {
+        dependsOn doEncryption
+        dependsOn gitAdd
+        dependsOn gitCommit
+        dependsOn gitPush
+        finalizedBy doDecryption
+    }
 }
