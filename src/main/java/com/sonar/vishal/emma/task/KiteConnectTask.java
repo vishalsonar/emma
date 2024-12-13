@@ -1,5 +1,6 @@
 package com.sonar.vishal.emma.task;
 
+import com.sonar.vishal.emma.algorithm.OneGainAlgorithm;
 import com.sonar.vishal.emma.algorithm.TradeAlgorithm;
 import com.sonar.vishal.emma.bus.OrderEventListener;
 import com.sonar.vishal.emma.entity.Data;
@@ -7,7 +8,9 @@ import com.sonar.vishal.emma.enumeration.ThreadStatus;
 import com.sonar.vishal.emma.service.FireBaseService;
 import com.sonar.vishal.emma.service.KiteConnectService;
 import com.sonar.vishal.emma.util.Constant;
+import com.sonar.vishal.emma.util.TradeAlgorithmMap;
 import com.zerodhatech.kiteconnect.KiteConnect;
+import com.zerodhatech.ticker.KiteTicker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -23,6 +26,7 @@ import java.util.concurrent.Executors;
 @Profile("KITE")
 public class KiteConnectTask {
 
+    private KiteTicker kiteTicker;
     private KiteConnect kiteConnect;
     private SimpleDateFormat dateFormat;
     private boolean isFirstExecution = true;
@@ -43,6 +47,7 @@ public class KiteConnectTask {
         dateFormat = new SimpleDateFormat(Constant.DOCUMENT_DATE_FORMAT_PATTERN);
         kiteConnectService.login();
         kiteConnect = kiteConnectService.getKiteConnect();
+        kiteTicker = kiteConnectService.getKiteTicker();
         if (kiteConnect != null) {
             Constant.ORDER_EVENT_BUS.register(new OrderEventListener(kiteConnect));
         }
@@ -54,13 +59,25 @@ public class KiteConnectTask {
         if (isFirstExecution) {
             init();
         }
-        if (kiteConnect == null) {
-            // return;
+        if (kiteConnect == null || kiteTicker == null) {
+            return;
         }
         List<String> companyName = getCompanyNameList();
-        companyName.stream().filter(name -> TradeAlgorithm.TRADE_STATUS.get(name) == null || TradeAlgorithm.TRADE_STATUS.get(name).equals(ThreadStatus.DEAD))
-                .forEach(name -> executorService.execute(TradeAlgorithm.getInstance(name)));
+        companyName.stream().filter(name -> TradeAlgorithmMap.TRADE_STATUS.get(name) == null || TradeAlgorithmMap.TRADE_STATUS.get(name).equals(ThreadStatus.DEAD))
+                .forEach(name -> executorService.execute(executeAlgorithm(name)));
         fireBaseService.updateTaskStatus(Constant.KITE_CONNECT_TASK_NAME);
+    }
+
+    private TradeAlgorithm executeAlgorithm(String companyName) {
+        if (kiteTicker.isConnectionOpen()) {
+            ArrayList<Long> tokens = new ArrayList<>(List.of(TradeAlgorithmMap.NSE_TRADE_TOKEN.get(companyName), TradeAlgorithmMap.BSE_TRADE_TOKEN.get(companyName)));
+            kiteTicker.subscribe(tokens);
+            kiteTicker.setMode(tokens, KiteTicker.modeLTP);
+        }
+
+        // Algorithm rotation logic.
+        TradeAlgorithm tradeAlgorithm = new OneGainAlgorithm(companyName);
+        return tradeAlgorithm;
     }
 
     private List<String> getCompanyNameList() {
