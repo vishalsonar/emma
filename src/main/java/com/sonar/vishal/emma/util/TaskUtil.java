@@ -1,11 +1,14 @@
 package com.sonar.vishal.emma.util;
 
+import org.springframework.context.annotation.Profile;
+
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+@Profile({"TASK", "ADMIN"})
 public class TaskUtil {
 
     private TaskUtil() {

@@ -24,10 +24,10 @@ public class DashBoardView extends VerticalLayout {
         AnalyticsService analyticsService = Context.getBean(AnalyticsService.class);
 
         add(ComponentUtil.getLogo());
-        add(new Html(Constant.HTML_HR));
+        add(Context.getBean(Html.class));
         add(ComponentUtil.getDateTime());
 
-        TabSheet tabSheet = new TabSheet();
+        TabSheet tabSheet = Context.getBean(TabSheet.class);
         tabSheet.add(Constant.GAINER_TODAY, analyticsService.getTodayDataGrid());
         tabSheet.add(Constant.GAINER_WEEK, analyticsService.getWeekDataGrid());
         tabSheet.add(Constant.GAINER_MONTH, analyticsService.getMonthDataGrid());
@@ -41,12 +41,11 @@ public class DashBoardView extends VerticalLayout {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        DateTimeTask.setCurrentUI(attachEvent.getUI());
-        DateTimeTask.setUiConsumer(ui -> ui.access(() -> ui.getCurrentView().getElement().getChild(2).setText(TaskUtil.getIndiaDateTimeNow())));
+        DateTimeTask.uiConsumerMap.put(attachEvent.getUI(), ui -> ui.access(() -> ui.getCurrentView().getElement().getChild(2).setText(TaskUtil.getIndiaDateTimeNow())));
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
-        DateTimeTask.setCurrentUI(null);
+        DateTimeTask.uiConsumerMap.remove(detachEvent.getUI());
     }
 }

@@ -2,14 +2,14 @@ package com.sonar.vishal.emma.util;
 
 import com.google.common.eventbus.EventBus;
 import com.sonar.vishal.emma.bus.LogEventListener;
+import com.sonar.vishal.emma.context.Context;
 
 public class Constant {
 
-    public static final EventBus LOG_EVENT_BUS = new EventBus("LOG EVENT BUS");
-    public static final EventBus ORDER_EVENT_BUS = new EventBus("ORDER EVENT BUS");
+    public static final EventBus LOG_EVENT_BUS = Context.getBean(EventBus.class, "LOG EVENT BUS");
 
     static {
-        LOG_EVENT_BUS.register(new LogEventListener());
+        LOG_EVENT_BUS.register(Context.getBean(LogEventListener.class));
     }
 
     private Constant() {

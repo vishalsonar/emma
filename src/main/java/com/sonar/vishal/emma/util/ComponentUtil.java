@@ -1,5 +1,6 @@
 package com.sonar.vishal.emma.util;
 
+import com.sonar.vishal.emma.context.Context;
 import com.sonar.vishal.emma.entity.CompanyNameData;
 import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.entity.FrequencyData;
@@ -15,9 +16,11 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.dom.Style;
+import org.springframework.context.annotation.Profile;
 
 import java.util.Date;
 
+@Profile("ADMIN")
 public class ComponentUtil {
 
     private ComponentUtil() {
@@ -47,7 +50,7 @@ public class ComponentUtil {
 
 
     public static Span getLogo() {
-        Span logo = new Span(EMMA);
+        Span logo = Context.getBean(Span.class, EMMA);
         Style logoStyle = logo.getStyle();
         logoStyle.set(WIDTH, ONE_ZERO_ZERO_PERCENTAGE);
         logoStyle.set(FONT_SIZE, FOUR_ZERO_PX);
@@ -56,7 +59,8 @@ public class ComponentUtil {
     }
 
     public static Span getDateTime() {
-        Span time = new Span(new Date().toString());
+        String dateTime = Context.getBean(Date.class).toString();
+        Span time = Context.getBean(Span.class, dateTime);
         Style timeStyle = time.getStyle();
         timeStyle.set(WIDTH, ONE_ZERO_ZERO_PERCENTAGE);
         timeStyle.set(TEXT_ALIGN, CENTER);
@@ -64,7 +68,7 @@ public class ComponentUtil {
     }
 
     public static Grid<Data> getGrid() {
-        Grid<Data> grid = new Grid<>(Data.class, false);
+        Grid<Data> grid = Context.getBean(Grid.class, Data.class, false);
         grid.addColumn(Data::getCompanyName).setHeader(COMPANY_NAME).setWidth(FIFTY_PERCENTAGE);
         grid.addColumn(Data::getLastTradePrice).setHeader(LAST_TRADE_PRICE).setWidth(TWENTY_FIVE_PERCENTAGE);
         grid.addColumn(Data::getPercentageChange).setHeader(PERCENTAGE_CHANGE).setWidth(TWENTY_FIVE_PERCENTAGE);
@@ -74,7 +78,7 @@ public class ComponentUtil {
     }
 
     public static Grid<FrequencyData> getFrequencyGrid() {
-        Grid<FrequencyData> grid = new Grid<>(FrequencyData.class, false);
+        Grid<FrequencyData> grid = Context.getBean(Grid.class, FrequencyData.class, false);
         grid.addColumn(FrequencyData::getCompanyName).setHeader(COMPANY_NAME).setWidth(TWENTY_PERCENTAGE);
         grid.addColumn(FrequencyData::getOccurrence).setHeader(OCCURRENCE).setWidth(TWENTY_PERCENTAGE);
         grid.addColumn(FrequencyData::getAveragePercentage).setHeader(PERCENTAGE_CHANGE).setWidth(TWENTY_PERCENTAGE);
@@ -86,7 +90,7 @@ public class ComponentUtil {
     }
 
     public static Grid<TaskData> getTaskStatusGrid() {
-        Grid<TaskData> grid = new Grid<>(TaskData.class, false);
+        Grid<TaskData> grid = Context.getBean(Grid.class, TaskData.class, false);
         grid.addColumn(TaskData::getName).setHeader(TASK_NAME).setWidth(FIFTY_PERCENTAGE);
         grid.addColumn(TaskData::getLastExecution).setHeader(TASK_LAST_EXECUTION).setWidth(FIFTY_PERCENTAGE);
         grid.setWidthFull();
@@ -95,15 +99,15 @@ public class ComponentUtil {
     }
 
     public static Grid<CompanyNameData> getCompanyNameGrid(FireBaseService fireBaseService) {
-        Grid<CompanyNameData> grid = new Grid<>(CompanyNameData.class, false);
-        Binder<CompanyNameData> companyNameDataBinder = new Binder<>(CompanyNameData.class);
+        Grid<CompanyNameData> grid = Context.getBean(Grid.class, CompanyNameData.class, false);
+        Binder<CompanyNameData> companyNameDataBinder = Context.getBean(Binder.class, CompanyNameData.class);
         Editor<CompanyNameData> companyNameDataEditor = grid.getEditor();
-        TextField zerodhaNameTextField = new TextField();
+        TextField zerodhaNameTextField = Context.getBean(TextField.class);
         zerodhaNameTextField.setWidthFull();
         companyNameDataEditor.setBinder(companyNameDataBinder);
-        companyNameDataEditor.addCloseListener(editorCloseEvent -> new CompanyNameEditorCloseListener<CompanyNameData>(fireBaseService).onEditorClose(editorCloseEvent));
+        companyNameDataEditor.addCloseListener(editorCloseEvent -> Context.getBean(CompanyNameEditorCloseListener.class).onEditorClose(editorCloseEvent));
         companyNameDataBinder.forField(zerodhaNameTextField).bind(CompanyNameData::getZerodhaName, CompanyNameData::setZerodhaName);
-        grid.addItemDoubleClickListener(doubleClickEvent -> new CompanyNameItemDoubleClickListener<CompanyNameData>(companyNameDataEditor).onComponentEvent(doubleClickEvent));
+        grid.addItemDoubleClickListener(doubleClickEvent -> Context.getBean(CompanyNameItemDoubleClickListener.class).setEditor(companyNameDataEditor).onComponentEvent(doubleClickEvent));
         grid.addColumn(CompanyNameData::getEconomicTimesName).setHeader(ECONOMICS_TIMES_NAME).setWidth(FIFTY_PERCENTAGE);
         grid.addColumn(CompanyNameData::getZerodhaName).setHeader(ZERODHA_NAME).setWidth(FIFTY_PERCENTAGE).setEditorComponent(zerodhaNameTextField);
         grid.setWidthFull();
@@ -112,7 +116,7 @@ public class ComponentUtil {
     }
 
     public static Notification getNotification(String message, boolean isErrorNotification) {
-        Notification notification = new Notification(message);
+        Notification notification = Context.getBean(Notification.class, message);
         notification.addThemeVariants(isErrorNotification ? NotificationVariant.LUMO_ERROR : NotificationVariant.LUMO_PRIMARY);
         notification.setPosition(Notification.Position.TOP_END);
         notification.setDuration(5000);

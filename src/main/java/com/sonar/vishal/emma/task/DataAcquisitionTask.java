@@ -1,6 +1,7 @@
 package com.sonar.vishal.emma.task;
 
 import com.sonar.vishal.emma.bus.LogErrorEvent;
+import com.sonar.vishal.emma.context.Context;
 import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.service.FireBaseService;
 import com.sonar.vishal.emma.util.Constant;
@@ -43,11 +44,11 @@ public class DataAcquisitionTask {
             return;
         }
         try {
-            List<Data> dataList = new ArrayList<>();
-            AtomicInteger counter = new AtomicInteger();
-            ChromeOptions options = new ChromeOptions();
+            List<Data> dataList = Context.getBean(ArrayList.class);
+            AtomicInteger counter = Context.getBean(AtomicInteger.class);
+            ChromeOptions options = Context.getBean(ChromeOptions.class);
             options.addArguments(Constant.CHROME_OPTION_HEADLESS);
-            ChromeDriver chromeDriver = new ChromeDriver(options);
+            ChromeDriver chromeDriver = Context.getBean(ChromeDriver.class, options);
             chromeDriver.get(url);
             Thread.sleep(10000);
             WebElement widget = chromeDriver.findElement(By.className(htmlWidget));
@@ -63,22 +64,22 @@ public class DataAcquisitionTask {
             fireBaseService.updateTaskStatus(Constant.DATA_AQUISITION_TASK_NAME);
             chromeDriver.close();
         } catch (InterruptedException interruptedException) {
-            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("DataAcquisitionTask :: execute :: Thread Interrupted Exception.").setException(interruptedException));
+            Constant.LOG_EVENT_BUS.post(Context.getBean(LogErrorEvent.class).setMessage("DataAcquisitionTask :: execute :: Thread Interrupted Exception.").setException(interruptedException));
             Thread.currentThread().interrupt();
         } catch (Exception exception) {
-            Constant.LOG_EVENT_BUS.post(new LogErrorEvent().setMessage("DataAcquisitionTask :: execute :: Error while executing task.").setException(exception));
+            Constant.LOG_EVENT_BUS.post(Context.getBean(LogErrorEvent.class).setMessage("DataAcquisitionTask :: execute :: Error while executing task.").setException(exception));
         }
     }
 
     private String getDocumentName(String[] parseDateArray) throws ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(Constant.DOCUMENT_PARSE_DATE_FORMAT_PATTERN);
+        SimpleDateFormat dateFormat = Context.getBean(SimpleDateFormat.class, Constant.DOCUMENT_PARSE_DATE_FORMAT_PATTERN);
         Date parseDate = dateFormat.parse(parseDateArray[2] + Constant.HYPHEN + parseDateArray[3] + Constant.HYPHEN + parseDateArray[4]);
-        dateFormat = new SimpleDateFormat(Constant.DOCUMENT_DATE_FORMAT_PATTERN);
+        dateFormat = Context.getBean(SimpleDateFormat.class, Constant.DOCUMENT_DATE_FORMAT_PATTERN);
         return dateFormat.format(parseDate);
     }
 
     private Data convertIteratorToData(Iterator<String> iterator) {
-        Data data = new Data();
+        Data data = Context.getBean(Data.class);
         data.setCompanyName(iterator.next());
         String[] price = iterator.next().split(Constant.SPACE_REGEX);
         data.setLastTradePrice(price[0].replace(Constant.COMMA, Constant.EMPTY));

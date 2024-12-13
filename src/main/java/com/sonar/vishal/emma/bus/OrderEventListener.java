@@ -8,12 +8,14 @@ import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.kiteconnect.utils.Constants;
 import com.zerodhatech.models.Order;
 import com.zerodhatech.models.OrderParams;
+import org.springframework.stereotype.Component;
 
+@Component
 public class OrderEventListener {
 
     private KiteConnect kiteConnect;
 
-    public OrderEventListener(KiteConnect kiteConnect) {
+    public void setKiteConnect(KiteConnect kiteConnect) {
         this.kiteConnect = kiteConnect;
     }
 

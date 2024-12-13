@@ -1,5 +1,6 @@
 package com.sonar.vishal.emma.task;
 
+import com.sonar.vishal.emma.context.Context;
 import com.sonar.vishal.emma.service.FireBaseService;
 import com.sonar.vishal.emma.util.Constant;
 import com.sonar.vishal.emma.util.TaskUtil;
@@ -23,7 +24,7 @@ public class FrequencyModulationTask {
     @Scheduled(fixedRateString = "${application.frequency.scheduler.fixedRate.millisecond}")
     public void execute() {
         if (TaskUtil.inBusinessHour() && LocalTime.now(ZoneId.of(Constant.ASIA_KOLKATA)).isAfter(LocalTime.parse(Constant.TIME_15_30))) {
-            String documentName = new SimpleDateFormat(Constant.DOCUMENT_DATE_FORMAT_PATTERN).format(new Date());
+            String documentName = Context.getBean(SimpleDateFormat.class, Constant.DOCUMENT_DATE_FORMAT_PATTERN).format(Context.getBean(Date.class));
             fireBaseService.mergeFrequency(documentName);
             fireBaseService.updateTaskStatus(Constant.FREQUENCY_MODULATION_TASK_NAME);
         }

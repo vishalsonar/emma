@@ -1,5 +1,6 @@
 package com.sonar.vishal.emma.service;
 
+import com.sonar.vishal.emma.context.Context;
 import com.sonar.vishal.emma.entity.CompanyNameData;
 import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.entity.FrequencyData;
@@ -23,11 +24,11 @@ public class AnalyticsService implements Serializable {
     private FireBaseService fireBaseService;
 
     public AnalyticsService() {
-        dateFormat = new SimpleDateFormat(Constant.DOCUMENT_DATE_FORMAT_PATTERN);
+        dateFormat = Context.getBean(SimpleDateFormat.class, Constant.DOCUMENT_DATE_FORMAT_PATTERN);
     }
 
     public Grid<FrequencyData> getFrequencyDataGrid() {
-        List<FrequencyData> frequencyDataList = new ArrayList<>();
+        List<FrequencyData> frequencyDataList = Context.getBean(ArrayList.class);
         Grid<FrequencyData> frequencyDataGrid = ComponentUtil.getFrequencyGrid();
         fireBaseService.getFrequencyData().forEach((key, value) -> frequencyDataList.add(createFrequencyData(key, String.valueOf(value))));
         if (frequencyDataList.isEmpty()) {
@@ -39,7 +40,7 @@ public class AnalyticsService implements Serializable {
     }
 
     public Grid<TaskData> getTaskStatusDataGrid() {
-        List<TaskData> taskStatusDataList = new ArrayList<>();
+        List<TaskData> taskStatusDataList = Context.getBean(ArrayList.class);
         Grid<TaskData> taskStatusDataGrid = ComponentUtil.getTaskStatusGrid();
         fireBaseService.getTaskStatus().forEach((key, value) -> taskStatusDataList.add(createTaskData(key, String.valueOf(value))));
         if (taskStatusDataList.isEmpty()) {
@@ -50,7 +51,7 @@ public class AnalyticsService implements Serializable {
     }
 
     public Grid<CompanyNameData> getCompanyNameData() {
-        List<CompanyNameData> companyNameDataList = new ArrayList<>();
+        List<CompanyNameData> companyNameDataList = Context.getBean(ArrayList.class);
         Grid<CompanyNameData> companyNameDataGrid = ComponentUtil.getCompanyNameGrid(fireBaseService);
         fireBaseService.getCompanyNameData().forEach((key, value) -> {
             if (String.valueOf(value).equals(Constant.EMPTY)) {
@@ -66,7 +67,8 @@ public class AnalyticsService implements Serializable {
 
     public Grid<Data> getTodayDataGrid() {
         Grid<Data> grid = ComponentUtil.getGrid();
-        List<Data> dataList = new ArrayList<>(fireBaseService.getCollectionMapData(dateFormat.format(new Date())).values());
+        List<Data> dataList = Context.getBean(ArrayList.class);
+        dataList.addAll(fireBaseService.getCollectionMapData(dateFormat.format(Context.getBean(Date.class))).values());
         if (dataList.isEmpty()) {
             ComponentUtil.getNotification("Failed to load Gainer Today Data.", true).open();
         }
@@ -85,7 +87,7 @@ public class AnalyticsService implements Serializable {
 
     private FrequencyData createFrequencyData(String companyName, String occurrence) {
         String[] valueString = occurrence.split(Constant.PIPE_REGEX);
-        FrequencyData frequencyData = new FrequencyData();
+        FrequencyData frequencyData = Context.getBean(FrequencyData.class);
         frequencyData.setCompanyName(companyName);
         frequencyData.setOccurrence(valueString[0]);
         frequencyData.setAveragePercentage(valueString[1]);
@@ -95,27 +97,28 @@ public class AnalyticsService implements Serializable {
     }
 
     private TaskData createTaskData(String name, String lastExecution) {
-        TaskData taskData = new TaskData();
+        TaskData taskData = Context.getBean(TaskData.class);
         taskData.setName(name);
         taskData.setLastExecution(lastExecution);
         return taskData;
     }
 
     private CompanyNameData createCompanyNameData(String economicTimesName, String zerodhaName) {
-        CompanyNameData companyNameData = new CompanyNameData();
+        CompanyNameData companyNameData = Context.getBean(CompanyNameData.class);
         companyNameData.setEconomicTimesName(economicTimesName);
         companyNameData.setZerodhaName(zerodhaName);
         return companyNameData;
     }
 
     private Grid<Data> getGridData(Calendar startOfWeekCalender, Calendar endOfWeekCalender, String errorMessage) {
-        Map<String, Data> dataMap = new HashMap<>();
+        Map<String, Data> dataMap = Context.getBean(HashMap.class);
         Grid<Data> grid = ComponentUtil.getGrid();
         while (startOfWeekCalender.before(endOfWeekCalender)) {
             Optional.of(fireBaseService.getCollectionMapData(dateFormat.format(startOfWeekCalender.getTime()))).ifPresent(tempDataMap -> tempDataMap.forEach(dataMap::put));
             startOfWeekCalender.add(Calendar.DATE, 1);
         }
-        List<Data> dataList = new ArrayList<>(dataMap.values());
+        List<Data> dataList = Context.getBean(ArrayList.class);
+        dataList.addAll(dataMap.values());
         if (dataList.isEmpty()) {
             ComponentUtil.getNotification(errorMessage, true).open();
         }

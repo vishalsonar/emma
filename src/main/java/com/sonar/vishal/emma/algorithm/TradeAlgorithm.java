@@ -1,7 +1,7 @@
 package com.sonar.vishal.emma.algorithm;
 
+import com.sonar.vishal.emma.context.Context;
 import com.sonar.vishal.emma.enumeration.ThreadStatus;
-import com.sonar.vishal.emma.util.Constant;
 import com.sonar.vishal.emma.util.TradeAlgorithmMap;
 import com.zerodhatech.kiteconnect.utils.Constants;
 import com.zerodhatech.models.Order;
@@ -26,7 +26,7 @@ public abstract class TradeAlgorithm implements Runnable {
     protected abstract double calculateSellPrice();
 
     protected void submitOrder() {
-        orderParams = new OrderParams();
+        orderParams = Context.getBean(OrderParams.class);
         orderParams.quantity = calculateQuantity();
         orderParams.orderType = Constants.ORDER_TYPE_LIMIT;
         orderParams.tradingsymbol = companyName;
@@ -36,7 +36,7 @@ public abstract class TradeAlgorithm implements Runnable {
         orderParams.validity = Constants.VALIDITY_DAY;
         orderParams.price = isBuy ? calculateBuyPrice() : calculateSellPrice();
         orderParams.triggerPrice = 0.0;
-        Constant.ORDER_EVENT_BUS.post(orderParams);
+        TradeAlgorithmMap.ORDER_EVENT_BUS.post(orderParams);
     }
 
     protected boolean isLastOrderExecuted() {
