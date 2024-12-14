@@ -1,13 +1,17 @@
 package com.sonar.vishal.emma.task;
 
+import com.sonar.vishal.emma.algorithm.OneGainAlgorithm;
 import com.sonar.vishal.emma.algorithm.TradeAlgorithm;
 import com.sonar.vishal.emma.bus.OrderEventListener;
+import com.sonar.vishal.emma.context.Context;
 import com.sonar.vishal.emma.entity.Data;
 import com.sonar.vishal.emma.enumeration.ThreadStatus;
 import com.sonar.vishal.emma.service.FireBaseService;
 import com.sonar.vishal.emma.service.KiteConnectService;
 import com.sonar.vishal.emma.util.Constant;
+import com.sonar.vishal.emma.util.TradeAlgorithmMap;
 import com.zerodhatech.kiteconnect.KiteConnect;
+import com.zerodhatech.ticker.KiteTicker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -23,6 +27,7 @@ import java.util.concurrent.Executors;
 @Profile("KITE")
 public class KiteConnectTask {
 
+    private KiteTicker kiteTicker;
     private KiteConnect kiteConnect;
     private SimpleDateFormat dateFormat;
     private boolean isFirstExecution = true;
@@ -39,12 +44,17 @@ public class KiteConnectTask {
     @Autowired
     private KiteConnectService kiteConnectService;
 
+    @Autowired
+    private OrderEventListener orderEventListener;
+
     public void init() {
-        dateFormat = new SimpleDateFormat(Constant.DOCUMENT_DATE_FORMAT_PATTERN);
+        dateFormat = Context.getBean(SimpleDateFormat.class, Constant.DOCUMENT_DATE_FORMAT_PATTERN);
         kiteConnectService.login();
         kiteConnect = kiteConnectService.getKiteConnect();
+        kiteTicker = kiteConnectService.getKiteTicker();
         if (kiteConnect != null) {
-            Constant.ORDER_EVENT_BUS.register(new OrderEventListener(kiteConnect));
+            orderEventListener.setKiteConnect(kiteConnect);
+            TradeAlgorithmMap.ORDER_EVENT_BUS.register(orderEventListener);
         }
         isFirstExecution = false;
     }
@@ -54,18 +64,32 @@ public class KiteConnectTask {
         if (isFirstExecution) {
             init();
         }
-        if (kiteConnect == null) {
+        if (kiteConnect == null || kiteTicker == null) {
             return;
         }
         List<String> companyName = getCompanyNameList();
-        companyName.stream().filter(name -> TradeAlgorithm.TRADE_STATUS.get(name) == null || TradeAlgorithm.TRADE_STATUS.get(name).equals(ThreadStatus.DEAD))
-                .forEach(name -> executorService.execute(TradeAlgorithm.getInstance(name)));
+        companyName.stream().filter(name -> TradeAlgorithmMap.TRADE_STATUS.get(name) == null || TradeAlgorithmMap.TRADE_STATUS.get(name).equals(ThreadStatus.DEAD))
+                .forEach(name -> executorService.execute(executeAlgorithm(name)));
         fireBaseService.updateTaskStatus(Constant.KITE_CONNECT_TASK_NAME);
     }
 
+    private TradeAlgorithm executeAlgorithm(String companyName) {
+        if (kiteTicker.isConnectionOpen()) {
+            ArrayList<Long> tokens = Context.getBean(ArrayList.class);
+            tokens.addAll(List.of(TradeAlgorithmMap.NSE_TRADE_TOKEN.get(companyName), TradeAlgorithmMap.BSE_TRADE_TOKEN.get(companyName)));
+            kiteTicker.subscribe(tokens);
+            kiteTicker.setMode(tokens, KiteTicker.modeLTP);
+        }
+
+        // Algorithm rotation logic. Move to IOC
+        TradeAlgorithm tradeAlgorithm = new OneGainAlgorithm(companyName);
+        return tradeAlgorithm;
+    }
+
     private List<String> getCompanyNameList() {
-        dateFormat = new SimpleDateFormat(Constant.DOCUMENT_DATE_FORMAT_PATTERN);
-        List<Data> dataList = new ArrayList<>(fireBaseService.getCollectionMapData(dateFormat.format(new Date())).values());
+        dateFormat = Context.getBean(SimpleDateFormat.class, Constant.DOCUMENT_DATE_FORMAT_PATTERN);
+        List<Data> dataList = Context.getBean(ArrayList.class);
+        dataList.addAll(fireBaseService.getCollectionMapData(dateFormat.format(Context.getBean(Date.class))).values());
         Collections.sort(dataList, (data1, data2) -> compareDouble(data1.getPercentageChange(), data2.getPercentageChange()));
         if (dataList.size() > companyNameListSize) {
             dataList = dataList.subList(0, companyNameListSize);

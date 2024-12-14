@@ -10,8 +10,12 @@ public class Context implements ApplicationContextAware {
 
     private static ApplicationContext applicationContext;
 
-    public static <T> T getBean(Class<T> requiredType) {
+    public static synchronized <T> T getBean(Class<T> requiredType) {
         return applicationContext.getBean(requiredType);
+    }
+
+    public static synchronized <T> T getBean(Class<T> requiredType, Object... args) {
+        return applicationContext.getBean(requiredType, args);
     }
 
     @Override

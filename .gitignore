@@ -31,6 +31,8 @@ build/
 !**/src/test/**
 **/emma-service-account.json
 **/application-KITE.properties
+buildSrc/.gradle
+buildSrc/build
 
 ### STS ###
 .apt_generated

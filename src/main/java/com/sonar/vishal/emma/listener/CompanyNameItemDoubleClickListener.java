@@ -7,12 +7,14 @@ import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.grid.editor.Editor;
 
+@org.springframework.stereotype.Component
 public class CompanyNameItemDoubleClickListener<T> implements ComponentEventListener<ItemDoubleClickEvent<T>> {
 
     private Editor<CompanyNameData> companyNameDataEditor;
 
-    public CompanyNameItemDoubleClickListener(Editor<CompanyNameData> companyNameDataEditor) {
+    public CompanyNameItemDoubleClickListener<T> setEditor(Editor<CompanyNameData> companyNameDataEditor) {
         this.companyNameDataEditor = companyNameDataEditor;
+        return this;
     }
 
     @Override
