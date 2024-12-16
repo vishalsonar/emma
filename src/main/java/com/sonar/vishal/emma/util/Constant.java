@@ -16,6 +16,7 @@ public class Constant {
         // Prevent Instantiation
     }
 
+    public static final String DAY = "day";
     public static final String TIME_15_30 = "15:30";
     public static final String ASIA_KOLKATA = "Asia/Kolkata";
 

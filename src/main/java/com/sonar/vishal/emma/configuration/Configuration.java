@@ -112,4 +112,11 @@ public class Configuration {
     public ByteArrayInputStream getByteArrayInputStream(byte[] buf) {
         return new ByteArrayInputStream(buf);
     }
+
+    @Bean
+    @UIScope
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public Exception getException(String exceptionMessage) {
+        return new Exception(exceptionMessage);
+    }
 }
