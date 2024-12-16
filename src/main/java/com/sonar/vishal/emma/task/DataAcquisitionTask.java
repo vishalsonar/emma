@@ -38,6 +38,9 @@ public class DataAcquisitionTask {
     @Value("${application.scheduler.html.numberFonts}")
     private String numberFonts;
 
+    @Value("${application.scheduler.thread.sleep.millisecond}")
+    private Long threadSleepInMilliSecond;
+
     @Scheduled(fixedRateString = "${application.scheduler.fixedRate.millisecond}")
     public void execute() {
         if (!TaskUtil.inBusinessHour()) {
@@ -50,7 +53,7 @@ public class DataAcquisitionTask {
             options.addArguments(Constant.CHROME_OPTION_HEADLESS);
             ChromeDriver chromeDriver = Context.getBean(ChromeDriver.class, options);
             chromeDriver.get(url);
-            Thread.sleep(10000);
+            Thread.sleep(threadSleepInMilliSecond);
             WebElement widget = chromeDriver.findElement(By.className(htmlWidget));
             List<String> newLineList = Arrays.asList(widget.getText().split(Constant.NEW_LINE_REGEX));
 

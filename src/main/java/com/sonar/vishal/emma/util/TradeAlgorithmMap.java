@@ -21,6 +21,7 @@ public class TradeAlgorithmMap {
     public static final Map<Long, Double> TRADE_PRICE = Context.getBean(ConcurrentHashMap.class);
     public static final Map<String, Long> NSE_TRADE_TOKEN = Context.getBean(ConcurrentHashMap.class);
     public static final Map<String, Long> BSE_TRADE_TOKEN = Context.getBean(ConcurrentHashMap.class);
-    public static final Map<String, Order> TRADE_ORDER_STATUS = Context.getBean(ConcurrentHashMap.class);
     public static final Map<String, ThreadStatus> TRADE_STATUS = Context.getBean(ConcurrentHashMap.class);
+    public static final Map<String, Map<String, Order>> TRADE_ORDER = Context.getBean(ConcurrentHashMap.class);
+    public static final Map<String, String> LAST_TRADE_ORDER = Context.getBean(ConcurrentHashMap.class);
 }

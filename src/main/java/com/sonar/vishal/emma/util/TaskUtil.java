@@ -21,7 +21,7 @@ public class TaskUtil {
         return dateTimeFormatter.format(Instant.now());
     }
 
-    public static boolean inBusinessHour() {
+    public static synchronized boolean inBusinessHour() {
         boolean state = false;
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone(Constant.ASIA_KOLKATA));

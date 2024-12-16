@@ -8,17 +8,24 @@ import com.sonar.vishal.emma.util.TradeAlgorithmMap;
 import com.zerodhatech.kiteconnect.KiteConnect;
 import com.zerodhatech.kiteconnect.kitehttp.exceptions.KiteException;
 import com.zerodhatech.kiteconnect.utils.Constants;
+import com.zerodhatech.models.Order;
 import com.zerodhatech.models.User;
 import com.zerodhatech.ticker.KiteTicker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Profile("KITE")
+@Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class KiteConnectService implements Serializable {
 
     @Value("${application.kite.connect.api.key}")
@@ -48,7 +55,7 @@ public class KiteConnectService implements Serializable {
     private transient KiteTicker kiteTicker;
     private transient KiteConnect kiteConnect;
 
-    public void login() {
+    public synchronized void login() {
         try {
             kiteConnect = Context.getBean(KiteConnect.class, apiKey);
             final User userModel = kiteConnect.generateSession(apiRequestToken, apiSecret);
@@ -67,32 +74,65 @@ public class KiteConnectService implements Serializable {
             kiteConnect.getInstruments(Constants.EXCHANGE_BSE).stream().forEach(instrument -> TradeAlgorithmMap.BSE_TRADE_TOKEN.put(instrument.getTradingsymbol(), instrument.getInstrument_token()));
             kiteTicker.setOnTickerArrivalListener(tradeOnTickerArrivalListener);
         } catch (KiteException kiteException) {
+            kiteTicker = null;
             kiteConnect = null;
             Constant.LOG_EVENT_BUS.post(Context.getBean(LogErrorEvent.class).setMessage("KiteConnectService :: login :: Error while initializing KiteConnect. :: " + kiteException.message).setException(kiteException));
         } catch (Exception exception) {
+            kiteTicker = null;
             kiteConnect = null;
             Constant.LOG_EVENT_BUS.post(Context.getBean(LogErrorEvent.class).setMessage("KiteConnectService :: login :: Error while initializing KiteConnect.").setException(exception));
         }
     }
 
-    public void logout() {
+    public synchronized void logout() {
         try {
-            kiteTicker.disconnect();
-            kiteConnect.logout();
+            if (kiteTicker != null) {
+                kiteTicker.disconnect();
+            }
+            if (kiteConnect != null) {
+                kiteConnect.logout();
+            }
         } catch (KiteException kiteException) {
             Constant.LOG_EVENT_BUS.post(Context.getBean(LogErrorEvent.class).setMessage("KiteConnectService :: logout :: " + kiteException.message).setException(kiteException));
         } catch (Exception exception) {
             Constant.LOG_EVENT_BUS.post(Context.getBean(LogErrorEvent.class).setMessage("KiteConnectService :: logout :: Error in logout.").setException(exception));
         } finally {
+            kiteTicker = null;
             kiteConnect = null;
         }
     }
 
-    public KiteConnect getKiteConnect() {
+    public synchronized void updateOrder() {
+        try {
+            kiteConnect.getOrders().stream().forEach(order -> {
+                Map<String, Order> orderMap = TradeAlgorithmMap.TRADE_ORDER.get(order.tradingSymbol);
+                if (orderMap == null) {
+                    orderMap = Context.getBean(HashMap.class);
+                }
+                orderMap.put(order.orderId, order);
+                TradeAlgorithmMap.TRADE_ORDER.put(order.tradingSymbol, orderMap);
+            });
+        } catch (KiteException kiteException) {
+            Constant.LOG_EVENT_BUS.post(Context.getBean(LogErrorEvent.class).setMessage("KiteConnectService :: updateOrder :: " + kiteException.message).setException(kiteException));
+        } catch (Exception exception) {
+            Constant.LOG_EVENT_BUS.post(Context.getBean(LogErrorEvent.class).setMessage("KiteConnectService :: updateOrder :: Error in updating order.").setException(exception));
+        }
+    }
+
+    public synchronized KiteConnect getKiteConnect() {
         return kiteConnect;
     }
 
-    public KiteTicker getKiteTicker() {
+    public synchronized KiteTicker getKiteTicker() {
         return kiteTicker;
+    }
+
+    public synchronized boolean isConnectionOpen() {
+        return kiteConnect != null && kiteTicker != null && kiteTicker.isConnectionOpen();
+    }
+
+    public synchronized void subscribe(ArrayList<Long> tokens) {
+        kiteTicker.subscribe(tokens);
+        kiteTicker.setMode(tokens, KiteTicker.modeLTP);
     }
 }

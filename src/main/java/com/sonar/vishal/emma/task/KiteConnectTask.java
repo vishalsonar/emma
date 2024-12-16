@@ -9,9 +9,9 @@ import com.sonar.vishal.emma.enumeration.ThreadStatus;
 import com.sonar.vishal.emma.service.FireBaseService;
 import com.sonar.vishal.emma.service.KiteConnectService;
 import com.sonar.vishal.emma.util.Constant;
+import com.sonar.vishal.emma.util.TaskUtil;
 import com.sonar.vishal.emma.util.TradeAlgorithmMap;
-import com.zerodhatech.kiteconnect.KiteConnect;
-import com.zerodhatech.ticker.KiteTicker;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -27,10 +27,8 @@ import java.util.concurrent.Executors;
 @Profile("KITE")
 public class KiteConnectTask {
 
-    private KiteTicker kiteTicker;
-    private KiteConnect kiteConnect;
-    private SimpleDateFormat dateFormat;
-    private boolean isFirstExecution = true;
+    private String collectionName;
+    private List<String> companyName;
     private Map<String, Object> companyNameData;
     private boolean updateCompanyNameMap = false;
     private ExecutorService executorService = Executors.newCachedThreadPool();
@@ -47,58 +45,46 @@ public class KiteConnectTask {
     @Autowired
     private OrderEventListener orderEventListener;
 
+    @PostConstruct
     public void init() {
-        dateFormat = Context.getBean(SimpleDateFormat.class, Constant.DOCUMENT_DATE_FORMAT_PATTERN);
+        SimpleDateFormat dateFormat = Context.getBean(SimpleDateFormat.class, Constant.DOCUMENT_DATE_FORMAT_PATTERN);
+        collectionName = dateFormat.format(Context.getBean(Date.class));
         kiteConnectService.login();
-        kiteConnect = kiteConnectService.getKiteConnect();
-        kiteTicker = kiteConnectService.getKiteTicker();
-        if (kiteConnect != null) {
-            orderEventListener.setKiteConnect(kiteConnect);
+        if (kiteConnectService.isConnectionOpen()) {
+            kiteConnectService.updateOrder();
             TradeAlgorithmMap.ORDER_EVENT_BUS.register(orderEventListener);
         }
-        isFirstExecution = false;
     }
 
     @Scheduled(fixedRateString = "${application.kite.connect.fixedRate.millisecond}")
     public void execute() {
-        if (isFirstExecution) {
-            init();
+        if (TaskUtil.inBusinessHour() && kiteConnectService.isConnectionOpen()) {
+            updateCompanyNameList();
+            companyName.stream().filter(name -> TradeAlgorithmMap.TRADE_STATUS.get(name) == null || TradeAlgorithmMap.TRADE_STATUS.get(name).equals(ThreadStatus.DEAD))
+                    .forEach(name -> executorService.execute(executeAlgorithm(name)));
         }
-        if (kiteConnect == null || kiteTicker == null) {
-            return;
-        }
-        List<String> companyName = getCompanyNameList();
-        companyName.stream().filter(name -> TradeAlgorithmMap.TRADE_STATUS.get(name) == null || TradeAlgorithmMap.TRADE_STATUS.get(name).equals(ThreadStatus.DEAD))
-                .forEach(name -> executorService.execute(executeAlgorithm(name)));
-        fireBaseService.updateTaskStatus(Constant.KITE_CONNECT_TASK_NAME);
     }
 
     private TradeAlgorithm executeAlgorithm(String companyName) {
-        if (kiteTicker.isConnectionOpen()) {
-            ArrayList<Long> tokens = Context.getBean(ArrayList.class);
-            tokens.addAll(List.of(TradeAlgorithmMap.NSE_TRADE_TOKEN.get(companyName), TradeAlgorithmMap.BSE_TRADE_TOKEN.get(companyName)));
-            kiteTicker.subscribe(tokens);
-            kiteTicker.setMode(tokens, KiteTicker.modeLTP);
-        }
+        ArrayList<Long> tokens = Context.getBean(ArrayList.class);
+        tokens.addAll(List.of(TradeAlgorithmMap.NSE_TRADE_TOKEN.get(companyName), TradeAlgorithmMap.BSE_TRADE_TOKEN.get(companyName)));
+        kiteConnectService.subscribe(tokens);
 
-        // Algorithm rotation logic. Move to IOC
-        TradeAlgorithm tradeAlgorithm = new OneGainAlgorithm(companyName);
+        TradeAlgorithm tradeAlgorithm = Context.getBean(OneGainAlgorithm.class, companyName);
         return tradeAlgorithm;
     }
 
-    private List<String> getCompanyNameList() {
-        dateFormat = Context.getBean(SimpleDateFormat.class, Constant.DOCUMENT_DATE_FORMAT_PATTERN);
+    private void updateCompanyNameList() {
         List<Data> dataList = Context.getBean(ArrayList.class);
-        dataList.addAll(fireBaseService.getCollectionMapData(dateFormat.format(Context.getBean(Date.class))).values());
+        dataList.addAll(fireBaseService.getCollectionMapData(collectionName).values());
         Collections.sort(dataList, (data1, data2) -> compareDouble(data1.getPercentageChange(), data2.getPercentageChange()));
         if (dataList.size() > companyNameListSize) {
             dataList = dataList.subList(0, companyNameListSize);
         }
-        List<String> companyName = dataList.stream().map(Data::getCompanyName).map(this::mapCompanyName).filter(item -> !item.equals(Constant.EMPTY)).toList();
+        companyName = dataList.stream().map(Data::getCompanyName).map(this::mapCompanyName).filter(item -> !item.equals(Constant.EMPTY)).toList();
         if (updateCompanyNameMap) {
             fireBaseService.setCompanyNameData(companyNameData);
         }
-        return companyName;
     }
 
     private String mapCompanyName(String companyName) {
